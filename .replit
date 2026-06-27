@@ -27,4 +27,4 @@ channel = "stable-25_05"
 
 [userenv.shared]
 AIRTABLE_BASE_ID = "appw5GPSFoQYvoJ0r"
-AIRTABLE_TABLE_NAME = "To DO"
+AIRTABLE_TABLE_NAME = "To Do"
