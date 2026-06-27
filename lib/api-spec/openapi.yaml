@@ -81,11 +81,31 @@ paths:
               schema:
                 $ref: "#/components/schemas/TodoStats"
   /todos/{id}:
+    get:
+      operationId: getTodo
+      tags: [todos]
+      summary: Get a single todo
+      description: Returns full detail of a single todo item
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Todo detail
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Todo"
+        "404":
+          description: Not found
     patch:
       operationId: updateTodo
       tags: [todos]
       summary: Update a todo
-      description: Updates a todo item in Airtable (toggle complete, rename)
+      description: Updates a todo item in Airtable
       parameters:
         - name: id
           in: path
@@ -144,7 +164,35 @@ components:
           description: Task title
         completed:
           type: boolean
-          description: Whether the task is done
+          description: Whether the task is done (Status = Done)
+        flagged:
+          type: boolean
+          description: Whether the task is flagged (Priority = High)
+        priority:
+          type: string
+          nullable: true
+          enum: [High, Medium, Low]
+          description: Task priority
+        dueDate:
+          type: string
+          nullable: true
+          description: Due date in MM/DD/YYYY format
+        source:
+          type: string
+          nullable: true
+          description: Source (Manual, Outlook, Teams, iMessage, Other)
+        notes:
+          type: string
+          nullable: true
+          description: Free-form notes
+        tags:
+          type: string
+          nullable: true
+          description: Comma-separated tags
+        attachmentSummary:
+          type: string
+          nullable: true
+          description: AI-generated attachment summary
         createdAt:
           type: string
           description: ISO timestamp
@@ -157,6 +205,13 @@ components:
           type: string
           minLength: 1
           description: Task title
+        priority:
+          type: string
+          nullable: true
+          enum: [High, Medium, Low]
+        source:
+          type: string
+          nullable: true
     TodoUpdate:
       type: object
       properties:
@@ -165,6 +220,25 @@ components:
           minLength: 1
         completed:
           type: boolean
+        flagged:
+          type: boolean
+          description: Setting to true sets Priority=High; false clears priority
+        priority:
+          type: string
+          nullable: true
+          enum: [High, Medium, Low]
+        dueDate:
+          type: string
+          nullable: true
+        source:
+          type: string
+          nullable: true
+        notes:
+          type: string
+          nullable: true
+        tags:
+          type: string
+          nullable: true
     TodoStats:
       type: object
       required:

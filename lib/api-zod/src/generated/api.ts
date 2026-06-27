@@ -28,7 +28,14 @@ export const ListTodosQueryParams = zod.object({
 export const ListTodosResponseItem = zod.object({
   "id": zod.string().describe('Airtable record ID'),
   "title": zod.string().describe('Task title'),
-  "completed": zod.boolean().describe('Whether the task is done'),
+  "completed": zod.boolean().describe('Whether the task is done (Status = Done)'),
+  "flagged": zod.boolean().optional().describe('Whether the task is flagged (Priority = High)'),
+  "priority": zod.enum(['High', 'Medium', 'Low']).nullish().describe('Task priority'),
+  "dueDate": zod.string().nullish().describe('Due date in MM\/DD\/YYYY format'),
+  "source": zod.string().nullish().describe('Source (Manual, Outlook, Teams, iMessage, Other)'),
+  "notes": zod.string().nullish().describe('Free-form notes'),
+  "tags": zod.string().nullish().describe('Comma-separated tags'),
+  "attachmentSummary": zod.string().nullish().describe('AI-generated attachment summary'),
   "createdAt": zod.string().describe('ISO timestamp')
 })
 export const ListTodosResponse = zod.array(ListTodosResponseItem)
@@ -42,13 +49,22 @@ export const ListTodosResponse = zod.array(ListTodosResponseItem)
 
 
 export const CreateTodoBody = zod.object({
-  "title": zod.string().min(1).describe('Task title')
+  "title": zod.string().min(1).describe('Task title'),
+  "priority": zod.enum(['High', 'Medium', 'Low']).nullish(),
+  "source": zod.string().nullish()
 })
 
 export const CreateTodoResponse = zod.object({
   "id": zod.string().describe('Airtable record ID'),
   "title": zod.string().describe('Task title'),
-  "completed": zod.boolean().describe('Whether the task is done'),
+  "completed": zod.boolean().describe('Whether the task is done (Status = Done)'),
+  "flagged": zod.boolean().optional().describe('Whether the task is flagged (Priority = High)'),
+  "priority": zod.enum(['High', 'Medium', 'Low']).nullish().describe('Task priority'),
+  "dueDate": zod.string().nullish().describe('Due date in MM\/DD\/YYYY format'),
+  "source": zod.string().nullish().describe('Source (Manual, Outlook, Teams, iMessage, Other)'),
+  "notes": zod.string().nullish().describe('Free-form notes'),
+  "tags": zod.string().nullish().describe('Comma-separated tags'),
+  "attachmentSummary": zod.string().nullish().describe('AI-generated attachment summary'),
   "createdAt": zod.string().describe('ISO timestamp')
 })
 
@@ -65,7 +81,30 @@ export const GetTodoStatsResponse = zod.object({
 
 
 /**
- * Updates a todo item in Airtable (toggle complete, rename)
+ * Returns full detail of a single todo item
+ * @summary Get a single todo
+ */
+export const GetTodoParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+export const GetTodoResponse = zod.object({
+  "id": zod.string().describe('Airtable record ID'),
+  "title": zod.string().describe('Task title'),
+  "completed": zod.boolean().describe('Whether the task is done (Status = Done)'),
+  "flagged": zod.boolean().optional().describe('Whether the task is flagged (Priority = High)'),
+  "priority": zod.enum(['High', 'Medium', 'Low']).nullish().describe('Task priority'),
+  "dueDate": zod.string().nullish().describe('Due date in MM\/DD\/YYYY format'),
+  "source": zod.string().nullish().describe('Source (Manual, Outlook, Teams, iMessage, Other)'),
+  "notes": zod.string().nullish().describe('Free-form notes'),
+  "tags": zod.string().nullish().describe('Comma-separated tags'),
+  "attachmentSummary": zod.string().nullish().describe('AI-generated attachment summary'),
+  "createdAt": zod.string().describe('ISO timestamp')
+})
+
+
+/**
+ * Updates a todo item in Airtable
  * @summary Update a todo
  */
 export const UpdateTodoParams = zod.object({
@@ -77,13 +116,26 @@ export const UpdateTodoParams = zod.object({
 
 export const UpdateTodoBody = zod.object({
   "title": zod.string().min(1).optional(),
-  "completed": zod.boolean().optional()
+  "completed": zod.boolean().optional(),
+  "flagged": zod.boolean().optional().describe('Setting to true sets Priority=High; false clears priority'),
+  "priority": zod.enum(['High', 'Medium', 'Low']).nullish(),
+  "dueDate": zod.string().nullish(),
+  "source": zod.string().nullish(),
+  "notes": zod.string().nullish(),
+  "tags": zod.string().nullish()
 })
 
 export const UpdateTodoResponse = zod.object({
   "id": zod.string().describe('Airtable record ID'),
   "title": zod.string().describe('Task title'),
-  "completed": zod.boolean().describe('Whether the task is done'),
+  "completed": zod.boolean().describe('Whether the task is done (Status = Done)'),
+  "flagged": zod.boolean().optional().describe('Whether the task is flagged (Priority = High)'),
+  "priority": zod.enum(['High', 'Medium', 'Low']).nullish().describe('Task priority'),
+  "dueDate": zod.string().nullish().describe('Due date in MM\/DD\/YYYY format'),
+  "source": zod.string().nullish().describe('Source (Manual, Outlook, Teams, iMessage, Other)'),
+  "notes": zod.string().nullish().describe('Free-form notes'),
+  "tags": zod.string().nullish().describe('Comma-separated tags'),
+  "attachmentSummary": zod.string().nullish().describe('AI-generated attachment summary'),
   "createdAt": zod.string().describe('ISO timestamp')
 })
 

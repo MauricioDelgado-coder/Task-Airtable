@@ -5,6 +5,7 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
+import type { TodoInputPriority } from './todoInputPriority';
 
 export interface TodoInput {
   /**
@@ -12,4 +13,6 @@ export interface TodoInput {
      * @minLength 1
      */
   title: string;
+  priority?: TodoInputPriority;
+  source?: string | null;
 }

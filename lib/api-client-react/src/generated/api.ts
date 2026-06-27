@@ -367,6 +367,84 @@ export function useGetTodoStats<TData = Awaited<ReturnType<typeof getTodoStats>>
 
 
 
+export const getGetTodoUrl = (id: string,) => {
+
+
+
+
+  return `/api/todos/${id}`
+}
+
+/**
+ * Returns full detail of a single todo item
+ * @summary Get a single todo
+ */
+export const getTodo = async (id: string, options?: RequestInit): Promise<Todo> => {
+
+  return customFetch<Todo>(getGetTodoUrl(id),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetTodoQueryKey = (id: string,) => {
+    return [
+    `/api/todos/${id}`
+    ] as const;
+    }
+
+
+export const getGetTodoQueryOptions = <TData = Awaited<ReturnType<typeof getTodo>>, TError = ErrorType<void>>(id: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getTodo>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetTodoQueryKey(id);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getTodo>>> = ({ signal }) => getTodo(id, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getTodo>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetTodoQueryResult = NonNullable<Awaited<ReturnType<typeof getTodo>>>
+export type GetTodoQueryError = ErrorType<void>
+
+
+/**
+ * @summary Get a single todo
+ */
+
+export function useGetTodo<TData = Awaited<ReturnType<typeof getTodo>>, TError = ErrorType<void>>(
+ id: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getTodo>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetTodoQueryOptions(id,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
 export const getUpdateTodoUrl = (id: string,) => {
 
 
@@ -376,7 +454,7 @@ export const getUpdateTodoUrl = (id: string,) => {
 }
 
 /**
- * Updates a todo item in Airtable (toggle complete, rename)
+ * Updates a todo item in Airtable
  * @summary Update a todo
  */
 export const updateTodo = async (id: string,

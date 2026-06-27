@@ -22,20 +22,31 @@ async function parseResponse<T>(response: Response): Promise<T> {
   return body as T;
 }
 
-// Field mapping for the "To Do" table:
-//   Title  → singleLineText (primary field)
-//   Status → singleSelect ("Open" | "Done")
-export const FIELD_TITLE = "Title";
-export const FIELD_STATUS = "Status";
 export const STATUS_OPEN = "Open";
 export const STATUS_DONE = "Done";
+
+export interface AirtableAttachment {
+  id: string;
+  url: string;
+  filename: string;
+  size: number;
+  type: string;
+}
 
 export interface AirtableRecord {
   id: string;
   createdTime: string;
   fields: {
     Title?: string;
+    Priority?: string;
     Status?: string;
+    "Due Date"?: string;
+    Source?: string;
+    Notes?: string;
+    Tags?: string;
+    Attachment?: AirtableAttachment[];
+    "Attachment Summary"?: string;
+    "Created at"?: string;
     [key: string]: unknown;
   };
 }
@@ -50,7 +61,6 @@ export async function listRecords(filterFormula?: string): Promise<AirtableRecor
   if (filterFormula) {
     params.set("filterByFormula", filterFormula);
   }
-
   const url = `/v0/${getBaseId()}/${encodeURIComponent(TABLE_NAME)}?${params.toString()}`;
   const response = await connectors.proxy("airtable", url, { method: "GET" });
   const data = await parseResponse<AirtableListResponse>(response as unknown as Response);
@@ -60,23 +70,62 @@ export async function listRecords(filterFormula?: string): Promise<AirtableRecor
   );
 }
 
-export async function createRecord(title: string): Promise<AirtableRecord> {
+export async function getRecord(id: string): Promise<AirtableRecord> {
+  const url = `/v0/${getBaseId()}/${encodeURIComponent(TABLE_NAME)}/${id}`;
+  const response = await connectors.proxy("airtable", url, { method: "GET" });
+  return parseResponse<AirtableRecord>(response as unknown as Response);
+}
+
+export interface CreateFields {
+  title: string;
+  priority?: string | null;
+  source?: string | null;
+}
+
+export async function createRecord(fields: CreateFields): Promise<AirtableRecord> {
+  const airtableFields: Record<string, unknown> = {
+    Title: fields.title,
+    Status: STATUS_OPEN,
+  };
+  if (fields.priority) airtableFields.Priority = fields.priority;
+  if (fields.source) airtableFields.Source = fields.source;
+
   const url = `/v0/${getBaseId()}/${encodeURIComponent(TABLE_NAME)}`;
   const response = await connectors.proxy("airtable", url, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ fields: { [FIELD_TITLE]: title, [FIELD_STATUS]: STATUS_OPEN } }),
+    body: JSON.stringify({ fields: airtableFields }),
   });
   return parseResponse<AirtableRecord>(response as unknown as Response);
 }
 
-export async function updateRecord(
-  id: string,
-  patch: { title?: string; completed?: boolean },
-): Promise<AirtableRecord> {
-  const fields: Record<string, string> = {};
-  if (patch.title !== undefined) fields[FIELD_TITLE] = patch.title;
-  if (patch.completed !== undefined) fields[FIELD_STATUS] = patch.completed ? STATUS_DONE : STATUS_OPEN;
+export interface UpdateFields {
+  title?: string;
+  completed?: boolean;
+  flagged?: boolean;
+  priority?: string | null;
+  dueDate?: string | null;
+  source?: string | null;
+  notes?: string | null;
+  tags?: string | null;
+}
+
+export async function updateRecord(id: string, patch: UpdateFields): Promise<AirtableRecord> {
+  const fields: Record<string, unknown> = {};
+
+  if (patch.title !== undefined) fields.Title = patch.title;
+  if (patch.completed !== undefined) fields.Status = patch.completed ? STATUS_DONE : STATUS_OPEN;
+  if (patch.notes !== undefined) fields.Notes = patch.notes ?? "";
+  if (patch.tags !== undefined) fields.Tags = patch.tags ?? "";
+  if (patch.source !== undefined) fields.Source = patch.source ?? "";
+  if (patch.dueDate !== undefined) fields["Due Date"] = patch.dueDate ?? null;
+
+  // flagged overrides priority: true → "High", false → clear
+  if (patch.flagged !== undefined) {
+    fields.Priority = patch.flagged ? "High" : "";
+  } else if (patch.priority !== undefined) {
+    fields.Priority = patch.priority ?? "";
+  }
 
   const url = `/v0/${getBaseId()}/${encodeURIComponent(TABLE_NAME)}/${id}`;
   const response = await connectors.proxy("airtable", url, {

@@ -5,9 +5,17 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
+import type { TodoUpdatePriority } from './todoUpdatePriority';
 
 export interface TodoUpdate {
   /** @minLength 1 */
   title?: string;
   completed?: boolean;
+  /** Setting to true sets Priority=High; false clears priority */
+  flagged?: boolean;
+  priority?: TodoUpdatePriority;
+  dueDate?: string | null;
+  source?: string | null;
+  notes?: string | null;
+  tags?: string | null;
 }

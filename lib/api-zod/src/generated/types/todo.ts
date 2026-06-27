@@ -5,14 +5,29 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
+import type { TodoPriority } from './todoPriority';
 
 export interface Todo {
   /** Airtable record ID */
   id: string;
   /** Task title */
   title: string;
-  /** Whether the task is done */
+  /** Whether the task is done (Status = Done) */
   completed: boolean;
+  /** Whether the task is flagged (Priority = High) */
+  flagged?: boolean;
+  /** Task priority */
+  priority?: TodoPriority;
+  /** Due date in MM/DD/YYYY format */
+  dueDate?: string | null;
+  /** Source (Manual, Outlook, Teams, iMessage, Other) */
+  source?: string | null;
+  /** Free-form notes */
+  notes?: string | null;
+  /** Comma-separated tags */
+  tags?: string | null;
+  /** AI-generated attachment summary */
+  attachmentSummary?: string | null;
   /** ISO timestamp */
   createdAt: string;
 }

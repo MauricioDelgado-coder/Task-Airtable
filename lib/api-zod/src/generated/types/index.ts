@@ -11,5 +11,8 @@ export * from './listTodosParams';
 export * from './listTodosStatus';
 export * from './todo';
 export * from './todoInput';
+export * from './todoInputPriority';
+export * from './todoPriority';
 export * from './todoStats';
 export * from './todoUpdate';
+export * from './todoUpdatePriority';
