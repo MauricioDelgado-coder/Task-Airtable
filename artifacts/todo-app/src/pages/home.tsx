@@ -1,7 +1,7 @@
-import { useState, useRef, FormEvent } from "react";
+import { useState, FormEvent } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
-import { Check, Trash2, Plus, Circle, CheckCircle2, ListTodo } from "lucide-react";
+import { Trash2, Plus, Circle, CheckCircle2, ListTodo, Search, X } from "lucide-react";
 import {
   useListTodos,
   useCreateTodo,
@@ -16,6 +16,7 @@ import type { ListTodosStatus } from "@workspace/api-client-react/src/generated/
 export default function Home() {
   const [filter, setFilter] = useState<ListTodosStatus>("all");
   const [newTodoTitle, setNewTodoTitle] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
   const queryClient = useQueryClient();
 
   const { data: todos, isLoading: isTodosLoading } = useListTodos(
@@ -65,55 +66,89 @@ export default function Home() {
     );
   };
 
+  const filteredTodos = (todos ?? []).filter((t) =>
+    searchQuery.trim()
+      ? t.title.toLowerCase().includes(searchQuery.trim().toLowerCase())
+      : true
+  );
+
   return (
     <div className="min-h-screen bg-background text-foreground py-12 px-4 sm:px-6 md:px-8 flex justify-center">
       <div className="w-full max-w-2xl space-y-8">
-        
+
         {/* Header & Stats */}
         <header className="space-y-6">
-          <div className="flex items-end justify-between">
-            <h1 className="text-4xl sm:text-5xl font-serif text-primary" data-testid="heading-main">
-              Taskboard
-            </h1>
-          </div>
+          <h1 className="text-4xl sm:text-5xl font-serif text-primary" data-testid="heading-main">
+            Taskboard
+          </h1>
 
           <div className="grid grid-cols-3 gap-4 border-b border-border/60 pb-8">
             <div className="space-y-1">
               <p className="text-sm font-medium text-muted-foreground uppercase tracking-wider">Total</p>
               <p className="text-3xl font-serif" data-testid="stat-total">
-                {isStatsLoading ? "-" : stats?.total || 0}
+                {isStatsLoading ? "-" : stats?.total ?? 0}
               </p>
             </div>
             <div className="space-y-1">
               <p className="text-sm font-medium text-muted-foreground uppercase tracking-wider">Active</p>
               <p className="text-3xl font-serif" data-testid="stat-active">
-                {isStatsLoading ? "-" : stats?.active || 0}
+                {isStatsLoading ? "-" : stats?.active ?? 0}
               </p>
             </div>
             <div className="space-y-1">
               <p className="text-sm font-medium text-muted-foreground uppercase tracking-wider">Done</p>
               <p className="text-3xl font-serif text-primary" data-testid="stat-completed">
-                {isStatsLoading ? "-" : stats?.completed || 0}
+                {isStatsLoading ? "-" : stats?.completed ?? 0}
               </p>
             </div>
           </div>
         </header>
 
-        {/* Input */}
-        <form onSubmit={handleCreate} className="relative group">
-          <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-            <Plus className="h-5 w-5 text-muted-foreground group-focus-within:text-primary transition-colors" />
-          </div>
+        {/* Add task input */}
+        <form onSubmit={handleCreate} className="flex gap-2" data-testid="form-create">
           <input
             type="text"
             value={newTodoTitle}
             onChange={(e) => setNewTodoTitle(e.target.value)}
             placeholder="Write a new task..."
-            className="block w-full pl-12 pr-4 py-4 bg-card border border-border rounded-xl text-lg shadow-sm placeholder:text-muted-foreground focus:ring-2 focus:ring-primary focus:border-primary transition-all outline-none"
+            className="flex-grow pl-4 pr-4 py-4 bg-card border border-border rounded-xl text-lg shadow-sm placeholder:text-muted-foreground focus:ring-2 focus:ring-primary focus:border-primary transition-all outline-none"
             data-testid="input-new-todo"
             disabled={createTodo.isPending}
           />
+          <button
+            type="submit"
+            disabled={!newTodoTitle.trim() || createTodo.isPending}
+            className="flex-shrink-0 flex items-center justify-center w-14 h-[60px] bg-primary text-primary-foreground rounded-xl shadow-sm hover:opacity-90 active:scale-95 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+            data-testid="button-add-todo"
+          >
+            <Plus className="h-6 w-6" />
+          </button>
         </form>
+
+        {/* Search */}
+        <div className="relative">
+          <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+            <Search className="h-4 w-4 text-muted-foreground" />
+          </div>
+          <input
+            type="search"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search tasks..."
+            className="w-full pl-10 pr-10 py-2.5 bg-card border border-border rounded-lg text-sm placeholder:text-muted-foreground focus:ring-2 focus:ring-primary focus:border-primary transition-all outline-none"
+            data-testid="input-search"
+          />
+          {searchQuery && (
+            <button
+              type="button"
+              onClick={() => setSearchQuery("")}
+              className="absolute inset-y-0 right-0 pr-3 flex items-center text-muted-foreground hover:text-foreground transition-colors"
+              data-testid="button-clear-search"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          )}
+        </div>
 
         {/* Filters */}
         <div className="flex gap-2" data-testid="filters-group">
@@ -141,7 +176,7 @@ export default function Home() {
                 <div key={i} className="h-16 bg-card border border-border/50 rounded-xl" />
               ))}
             </div>
-          ) : !todos || todos.length === 0 ? (
+          ) : filteredTodos.length === 0 ? (
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
@@ -152,12 +187,16 @@ export default function Home() {
                 <ListTodo className="h-8 w-8" />
               </div>
               <p className="text-muted-foreground font-medium text-lg">
-                {filter === "all" ? "Your workspace is clear." : `No ${filter} tasks.`}
+                {searchQuery
+                  ? `No tasks matching "${searchQuery}".`
+                  : filter === "all"
+                  ? "Your workspace is clear."
+                  : `No ${filter} tasks.`}
               </p>
             </motion.div>
           ) : (
             <AnimatePresence mode="popLayout">
-              {todos.map((todo) => (
+              {filteredTodos.map((todo) => (
                 <motion.div
                   layout
                   initial={{ opacity: 0, scale: 0.95, y: 10 }}
@@ -183,7 +222,7 @@ export default function Home() {
                       <Circle className="h-6 w-6 text-muted-foreground hover:text-primary transition-colors" />
                     )}
                   </button>
-                  
+
                   <span
                     className={`flex-grow text-lg transition-all ${
                       todo.completed ? "text-muted-foreground line-through" : "text-foreground"
@@ -207,7 +246,7 @@ export default function Home() {
             </AnimatePresence>
           )}
         </div>
-        
+
       </div>
     </div>
   );
