@@ -22,3 +22,9 @@ timeoutMs = 20000
 
 [nix]
 channel = "stable-25_05"
+
+[userenv]
+
+[userenv.shared]
+AIRTABLE_BASE_ID = "appw5GPSFoQYvoJ0r"
+AIRTABLE_TABLE_NAME = "To DO"
