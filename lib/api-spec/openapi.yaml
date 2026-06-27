@@ -10,6 +10,8 @@ servers:
 tags:
   - name: health
     description: Health operations
+  - name: todos
+    description: Todo operations
 paths:
   /healthz:
     get:
@@ -24,6 +26,99 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+  /todos:
+    get:
+      operationId: listTodos
+      tags: [todos]
+      summary: List all todos
+      description: Returns all todo items from Airtable
+      parameters:
+        - name: status
+          in: query
+          required: false
+          description: Filter by completion status
+          schema:
+            type: string
+            enum: [all, active, completed]
+      responses:
+        "200":
+          description: List of todos
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Todo"
+    post:
+      operationId: createTodo
+      tags: [todos]
+      summary: Create a todo
+      description: Creates a new todo item in Airtable
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TodoInput"
+      responses:
+        "201":
+          description: Created todo
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Todo"
+  /todos/stats:
+    get:
+      operationId: getTodoStats
+      tags: [todos]
+      summary: Get todo statistics
+      description: Returns counts of total, active, and completed todos
+      responses:
+        "200":
+          description: Todo statistics
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TodoStats"
+  /todos/{id}:
+    patch:
+      operationId: updateTodo
+      tags: [todos]
+      summary: Update a todo
+      description: Updates a todo item in Airtable (toggle complete, rename)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TodoUpdate"
+      responses:
+        "200":
+          description: Updated todo
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Todo"
+    delete:
+      operationId: deleteTodo
+      tags: [todos]
+      summary: Delete a todo
+      description: Deletes a todo item from Airtable
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Deleted successfully
 components:
   schemas:
     HealthStatus:
@@ -33,4 +128,53 @@ components:
           type: string
       required:
         - status
-
+    Todo:
+      type: object
+      required:
+        - id
+        - title
+        - completed
+        - createdAt
+      properties:
+        id:
+          type: string
+          description: Airtable record ID
+        title:
+          type: string
+          description: Task title
+        completed:
+          type: boolean
+          description: Whether the task is done
+        createdAt:
+          type: string
+          description: ISO timestamp
+    TodoInput:
+      type: object
+      required:
+        - title
+      properties:
+        title:
+          type: string
+          minLength: 1
+          description: Task title
+    TodoUpdate:
+      type: object
+      properties:
+        title:
+          type: string
+          minLength: 1
+        completed:
+          type: boolean
+    TodoStats:
+      type: object
+      required:
+        - total
+        - active
+        - completed
+      properties:
+        total:
+          type: integer
+        active:
+          type: integer
+        completed:
+          type: integer
