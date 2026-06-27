@@ -11,6 +11,7 @@ import {
   createRecord,
   updateRecord,
   deleteRecord,
+  STATUS_DONE,
   type AirtableRecord,
 } from "../lib/airtable.js";
 
@@ -19,8 +20,8 @@ const router = Router();
 function toTodo(record: AirtableRecord) {
   return {
     id: record.id,
-    title: record.fields.Name ?? "",
-    completed: record.fields.Completed ?? false,
+    title: record.fields.Title ?? "",
+    completed: record.fields.Status === STATUS_DONE,
     createdAt: record.createdTime,
   };
 }
@@ -31,9 +32,9 @@ router.get("/todos", async (req, res) => {
     let filterFormula: string | undefined;
 
     if (query.status === "active") {
-      filterFormula = "NOT({Completed})";
+      filterFormula = `{Status} = "Open"`;
     } else if (query.status === "completed") {
-      filterFormula = "{Completed}";
+      filterFormula = `{Status} = "Done"`;
     }
 
     const records = await listRecords(filterFormula);
@@ -48,7 +49,7 @@ router.get("/todos/stats", async (req, res) => {
   try {
     const records = await listRecords();
     const total = records.length;
-    const completed = records.filter((r) => r.fields.Completed).length;
+    const completed = records.filter((r) => r.fields.Status === STATUS_DONE).length;
     const active = total - completed;
     res.json({ total, active, completed });
   } catch (err) {
@@ -60,11 +61,11 @@ router.get("/todos/stats", async (req, res) => {
 router.post("/todos", async (req, res) => {
   try {
     const body = CreateTodoBody.parse(req.body);
-    const record = await createRecord({ Name: body.title, Completed: false });
+    const record = await createRecord(body.title);
     res.status(201).json(toTodo(record));
   } catch (err) {
     req.log.error({ err }, "Failed to create todo");
-    res.status(500).json({ error: "Failed to create todo" });
+    res.status(500).json({ error: String(err) });
   }
 });
 
@@ -72,16 +73,14 @@ router.patch("/todos/:id", async (req, res) => {
   try {
     const { id } = UpdateTodoParams.parse(req.params);
     const body = UpdateTodoBody.parse(req.body);
-
-    const fields: Partial<{ Name: string; Completed: boolean }> = {};
-    if (body.title !== undefined) fields.Name = body.title;
-    if (body.completed !== undefined) fields.Completed = body.completed;
-
-    const record = await updateRecord(id, fields);
+    const record = await updateRecord(id, {
+      title: body.title,
+      completed: body.completed,
+    });
     res.json(toTodo(record));
   } catch (err) {
     req.log.error({ err }, "Failed to update todo");
-    res.status(500).json({ error: "Failed to update todo" });
+    res.status(500).json({ error: String(err) });
   }
 });
 
@@ -92,7 +91,7 @@ router.delete("/todos/:id", async (req, res) => {
     res.status(204).send();
   } catch (err) {
     req.log.error({ err }, "Failed to delete todo");
-    res.status(500).json({ error: "Failed to delete todo" });
+    res.status(500).json({ error: String(err) });
   }
 });
 
