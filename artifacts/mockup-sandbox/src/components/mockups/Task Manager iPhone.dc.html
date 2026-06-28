@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+* { box-sizing:border-box; margin:0; padding:0; }
+body { display:flex; justify-content:center; align-items:center; min-height:100vh; background:#1c1c1e; font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text',system-ui,sans-serif; }
+input,select,textarea,button { font-family:inherit; -webkit-tap-highlight-color:transparent; }
+input:focus,select:focus,textarea:focus { outline:none; }
+@keyframes slideUpSheet { from { transform:translateY(100%); } to { transform:translateY(0); } }
+@keyframes backdropFade { from { opacity:0; } to { opacity:1; } }
+</style>
+</helmet>
+
+<x-import component-from-global-scope="IOSDevice" from="./ios-frame.jsx" title="Tasks" hint-size="390px,870px">
+
+  <div style="height:100%; display:flex; flex-direction:column; background:#f2f2f7; position:relative; overflow:hidden;">
+
+    <!-- Scrollable area -->
+    <div style="flex:1; overflow-y:auto; -webkit-overflow-scrolling:touch;">
+
+      <!-- Large title + progress -->
+      <div style="padding:16px 20px 0;">
+        <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:10px;">
+          <h1 style="font-size:34px; font-weight:700; color:#000; letter-spacing:-0.5px; line-height:1;">Tasks</h1>
+          <span style="font-size:13px; color:#8e8e93; padding-bottom:5px;">{{ completedCount }}/{{ total }} done</span>
+        </div>
+        <div style="height:4px; background:#e5e5ea; border-radius:2px; overflow:hidden; margin-bottom:16px;">
+          <div style="height:4px; background:#007aff; border-radius:2px; width:{{ progressWidth }}; transition:width 0.4s ease;"></div>
+        </div>
+      </div>
+
+      <!-- Stats row -->
+      <div style="display:flex; gap:8px; padding:0 16px 14px;">
+        <div style="flex:1; background:white; border-radius:12px; padding:11px 14px;">
+          <div style="font-size:24px; font-weight:700; color:#007aff; line-height:1;">{{ activeCount }}</div>
+          <div style="font-size:12px; color:#8e8e93; margin-top:2px;">Active</div>
+        </div>
+        <div style="flex:1; background:white; border-radius:12px; padding:11px 14px;">
+          <div style="font-size:24px; font-weight:700; color:#34c759; line-height:1;">{{ completedCount }}</div>
+          <div style="font-size:12px; color:#8e8e93; margin-top:2px;">Done</div>
+        </div>
+        <div style="flex:1; background:white; border-radius:12px; padding:11px 14px;">
+          <div style="font-size:24px; font-weight:700; color:#000; line-height:1;">{{ total }}</div>
+          <div style="font-size:12px; color:#8e8e93; margin-top:2px;">Total</div>
+        </div>
+      </div>
+
+      <!-- Segmented control -->
+      <div style="padding:0 16px 14px;">
+        <div style="background:rgba(118,118,128,0.12); border-radius:9px; padding:2px; display:flex; gap:2px;">
+          <button onClick="{{ filterAll }}" style="flex:1; height:30px; border:none; border-radius:7px; background:{{ tabAllBg }}; color:{{ tabAllColor }}; font-size:13px; font-weight:{{ tabAllWeight }}; cursor:pointer; transition:all 0.2s; box-shadow:{{ tabAllShadow }};">All</button>
+          <button onClick="{{ filterActive }}" style="flex:1; height:30px; border:none; border-radius:7px; background:{{ tabActiveBg }}; color:{{ tabActiveColor }}; font-size:13px; font-weight:{{ tabActiveWeight }}; cursor:pointer; transition:all 0.2s; box-shadow:{{ tabActiveShadow }};">Active</button>
+          <button onClick="{{ filterCompleted }}" style="flex:1; height:30px; border:none; border-radius:7px; background:{{ tabDoneBg }}; color:{{ tabDoneColor }}; font-size:13px; font-weight:{{ tabDoneWeight }}; cursor:pointer; transition:all 0.2s; box-shadow:{{ tabDoneShadow }};">Done</button>
+        </div>
+      </div>
+
+      <!-- Task list -->
+      <div style="padding:0 16px 100px;">
+        <div style="background:white; border-radius:12px; overflow:hidden;">
+
+          <sc-for list="{{ enrichedTodos }}" as="todo" hint-placeholder-count="4">
+            <div style="display:flex; align-items:flex-start; padding:13px 16px; border-bottom:0.5px solid rgba(60,60,67,0.18); gap:12px; min-height:52px;">
+
+              <!-- Checkbox -->
+              <div onClick="{{ todo.onToggle }}" style="width:26px; height:26px; min-width:26px; border-radius:50%; background:{{ todo.checkboxBg }}; border:2.5px solid {{ todo.checkboxBorder }}; display:flex; align-items:center; justify-content:center; cursor:pointer; margin-top:1px; transition:all 0.15s;">
+                <sc-if value="{{ todo.completed }}" hint-placeholder-val="{{ false }}">
+                  <svg width="13" height="10" viewBox="0 0 13 10" fill="none"><path d="M1.5 5.5L5 9l6.5-8" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+                </sc-if>
+              </div>
+
+              <!-- Content -->
+              <div style="flex:1; min-width:0;">
+                <sc-if value="{{ todo.completed }}" hint-placeholder-val="{{ false }}">
+                  <p style="font-size:17px; color:#aeaeb2; text-decoration:line-through; line-height:1.35;">{{ todo.title }}</p>
+                </sc-if>
+                <sc-if value="{{ todo.notCompleted }}" hint-placeholder-val="{{ true }}">
+                  <p style="font-size:17px; color:#000; line-height:1.35; text-wrap:pretty;">{{ todo.title }}</p>
+                </sc-if>
+
+                <!-- Metadata chips -->
+                <div style="display:flex; flex-wrap:wrap; gap:4px; margin-top:5px; align-items:center;">
+                  <sc-if value="{{ todo.isHighPriority }}" hint-placeholder-val="{{ false }}">
+                    <span style="background:#ffeae8; color:#ff3b30; font-size:10px; font-weight:600; padding:2px 6px; border-radius:20px; letter-spacing:0.3px;">HIGH</span>
+                  </sc-if>
+                  <sc-if value="{{ todo.isMediumPriority }}" hint-placeholder-val="{{ false }}">
+                    <span style="background:#fff3e0; color:#ff9500; font-size:10px; font-weight:600; padding:2px 6px; border-radius:20px; letter-spacing:0.3px;">MED</span>
+                  </sc-if>
+                  <sc-if value="{{ todo.isLowPriority }}" hint-placeholder-val="{{ false }}">
+                    <span style="background:#e8fae8; color:#34c759; font-size:10px; font-weight:600; padding:2px 6px; border-radius:20px; letter-spacing:0.3px;">LOW</span>
+                  </sc-if>
+                  <sc-if value="{{ todo.hasSource }}" hint-placeholder-val="{{ false }}">
+                    <span style="background:#f2f2f7; color:#636366; font-size:11px; padding:2px 7px; border-radius:20px;">{{ todo.source }}</span>
+                  </sc-if>
+                  <sc-if value="{{ todo.hasDueDate }}" hint-placeholder-val="{{ false }}">
+                    <sc-if value="{{ todo.isOverdue }}" hint-placeholder-val="{{ false }}">
+                      <span style="background:#ffeae8; color:#ff3b30; font-size:11px; padding:2px 6px; border-radius:20px; font-weight:500;">⚠ {{ todo.dueDateDisplay }}</span>
+                    </sc-if>
+                    <sc-if value="{{ todo.notOverdue }}" hint-placeholder-val="{{ true }}">
+                      <span style="color:#8e8e93; font-size:11px;">{{ todo.dueDateDisplay }}</span>
+                    </sc-if>
+                  </sc-if>
+                </div>
+
+                <sc-if value="{{ todo.hasNotes }}" hint-placeholder-val="{{ false }}">
+                  <p style="margin-top:3px; font-size:13px; color:#aeaeb2; line-height:1.35;">{{ todo.notesPreview }}</p>
+                </sc-if>
+
+                <sc-if value="{{ todo.hasTags }}" hint-placeholder-val="{{ false }}">
+                  <div style="display:flex; flex-wrap:wrap; gap:4px; margin-top:6px;">
+                    <sc-for list="{{ todo.tagList }}" as="tag" hint-placeholder-count="2">
+                      <span style="background:#e8f0ff; color:#007aff; font-size:11px; padding:2px 7px; border-radius:20px; font-weight:500;">#{{ tag }}</span>
+                    </sc-for>
+                  </div>
+                </sc-if>
+              </div>
+
+              <!-- Row actions -->
+              <div style="display:flex; flex-direction:column; align-items:center; gap:2px; flex-shrink:0;">
+                <sc-if value="{{ todo.flagged }}" hint-placeholder-val="{{ false }}">
+                  <button onClick="{{ todo.onFlag }}" style="background:none; border:none; width:36px; height:36px; display:flex; align-items:center; justify-content:center; cursor:pointer;">
+                    <svg width="14" height="16" viewBox="0 0 14 16" fill="none"><path d="M2 1v14" stroke="#ff3b30" stroke-width="1.8" stroke-linecap="round"></path><path d="M2 1.5h10l-3 5.5 3 5.5H2" stroke="#ff3b30" stroke-width="1.8" stroke-linejoin="round" fill="#ffeae8"></path></svg>
+                  </button>
+                </sc-if>
+                <sc-if value="{{ todo.notFlagged }}" hint-placeholder-val="{{ true }}">
+                  <button onClick="{{ todo.onFlag }}" style="background:none; border:none; width:36px; height:36px; display:flex; align-items:center; justify-content:center; cursor:pointer;">
+                    <svg width="14" height="16" viewBox="0 0 14 16" fill="none"><path d="M2 1v14" stroke="#c7c7cc" stroke-width="1.8" stroke-linecap="round"></path><path d="M2 1.5h10l-3 5.5 3 5.5H2" stroke="#c7c7cc" stroke-width="1.8" stroke-linejoin="round"></path></svg>
+                  </button>
+                </sc-if>
+                <button onClick="{{ todo.onEdit }}" style="background:none; border:none; width:36px; height:36px; display:flex; align-items:center; justify-content:center; cursor:pointer; color:#c7c7cc;">
+                  <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M11 2l2 2-8 8-3 1 1-3z" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+                </button>
+                <button onClick="{{ todo.onDelete }}" style="background:none; border:none; width:36px; height:36px; display:flex; align-items:center; justify-content:center; cursor:pointer; color:#c7c7cc;">
+                  <svg width="13" height="15" viewBox="0 0 13 15" fill="none"><path d="M1 4.5h11M4.5 4.5v-2h4v2M2 4.5l.5 9h8l.5-9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+                </button>
+              </div>
+            </div>
+          </sc-for>
+
+          <!-- Empty state -->
+          <sc-if value="{{ isEmpty }}" hint-placeholder-val="{{ false }}">
+            <div style="padding:56px 20px; text-align:center;">
+              <div style="font-size:48px; margin-bottom:10px; opacity:0.3;">✓</div>
+              <p style="font-size:17px; font-weight:600; color:#000; margin-bottom:5px;">Nothing here</p>
+              <p style="font-size:15px; color:#8e8e93;">Tap + to add a task</p>
+            </div>
+          </sc-if>
+        </div>
+      </div>
+    </div>
+
+    <!-- FAB -->
+    <button onClick="{{ openAdd }}" style="position:absolute; right:20px; bottom:24px; width:56px; height:56px; border-radius:28px; background:#007aff; border:none; cursor:pointer; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 16px rgba(0,122,255,0.45);" style-active="background:#0062cc; transform:scale(0.95);">
+      <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><path d="M11 3v16M3 11h16" stroke="white" stroke-width="2.5" stroke-linecap="round"></path></svg>
+    </button>
+
+    <!-- ADD BOTTOM SHEET -->
+    <sc-if value="{{ showAddModal }}" hint-placeholder-val="{{ false }}">
+      <div onClick="{{ closeAdd }}" style="position:absolute; inset:0; background:rgba(0,0,0,0.4); z-index:50; display:flex; flex-direction:column; justify-content:flex-end; animation:backdropFade 0.2s ease;">
+        <div onClick="{{ stopPropagation }}" style="background:#f2f2f7; border-radius:20px 20px 0 0; max-height:90%; overflow-y:auto; animation:slideUpSheet 0.3s cubic-bezier(0.32,0.72,0,1);">
+          <div style="display:flex; justify-content:center; padding:10px 0 0;"><div style="width:36px; height:5px; background:#d1d1d6; border-radius:3px;"></div></div>
+          <div style="display:flex; justify-content:space-between; align-items:center; padding:14px 20px 12px;">
+            <button onClick="{{ closeAdd }}" style="background:none; border:none; font-size:17px; color:#007aff; cursor:pointer; min-width:60px;">Cancel</button>
+            <span style="font-size:17px; font-weight:600; color:#000;">New Task</span>
+            <button onClick="{{ submitAdd }}" style="background:none; border:none; font-size:17px; color:#007aff; font-weight:600; cursor:pointer; min-width:60px; text-align:right;">Add</button>
+          </div>
+          <div style="padding:0 16px 40px; display:flex; flex-direction:column; gap:10px;">
+            <div style="background:white; border-radius:12px; padding:14px 16px;">
+              <input value="{{ addForm.title }}" onChange="{{ handleAddTitle }}" placeholder="Task title" style="width:100%; border:none; font-size:17px; color:#000; background:transparent;">
+            </div>
+            <div style="background:white; border-radius:12px; padding:14px 16px;">
+              <textarea value="{{ addForm.notes }}" onChange="{{ handleAddNotes }}" placeholder="Notes" rows="3" style="width:100%; border:none; font-size:15px; color:#000; background:transparent; resize:none; line-height:1.4;"></textarea>
+            </div>
+            <div style="background:white; border-radius:12px; overflow:hidden;">
+              <div style="display:flex; align-items:center; padding:14px 16px; border-bottom:0.5px solid rgba(60,60,67,0.18);">
+                <span style="font-size:17px; color:#000; flex:1;">Priority</span>
+                <select value="{{ addForm.priority }}" onChange="{{ handleAddPriority }}" style="border:none; background:transparent; font-size:17px; color:#007aff; cursor:pointer; max-width:160px;">
+                  <option value="">None</option><option value="High">High</option><option value="Medium">Medium</option><option value="Low">Low</option>
+                </select>
+              </div>
+              <div style="display:flex; align-items:center; padding:14px 16px; border-bottom:0.5px solid rgba(60,60,67,0.18);">
+                <span style="font-size:17px; color:#000; flex:1;">Source</span>
+                <select value="{{ addForm.source }}" onChange="{{ handleAddSource }}" style="border:none; background:transparent; font-size:17px; color:#007aff; cursor:pointer; max-width:160px;">
+                  <option value="">None</option><option value="Manual">Manual</option><option value="Outlook">Outlook</option><option value="Teams">Teams</option><option value="iMessage">iMessage</option><option value="Other">Other</option>
+                </select>
+              </div>
+              <div style="display:flex; align-items:center; padding:14px 16px; border-bottom:0.5px solid rgba(60,60,67,0.18);">
+                <span style="font-size:17px; color:#000; flex:1;">Due Date</span>
+                <input type="date" value="{{ addForm.dueDate }}" onChange="{{ handleAddDueDate }}" style="border:none; background:transparent; font-size:15px; color:#007aff; cursor:pointer; max-width:160px;">
+              </div>
+              <div style="display:flex; align-items:center; padding:14px 16px;">
+                <span style="font-size:17px; color:#000; flex:1;">Tags</span>
+                <input value="{{ addForm.tags }}" onChange="{{ handleAddTags }}" placeholder="finance, urgent…" style="border:none; background:transparent; font-size:15px; color:#007aff; text-align:right; max-width:160px;">
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+
+    <!-- EDIT BOTTOM SHEET -->
+    <sc-if value="{{ showEditModal }}" hint-placeholder-val="{{ false }}">
+      <div onClick="{{ closeEdit }}" style="position:absolute; inset:0; background:rgba(0,0,0,0.4); z-index:50; display:flex; flex-direction:column; justify-content:flex-end; animation:backdropFade 0.2s ease;">
+        <div onClick="{{ stopPropagation }}" style="background:#f2f2f7; border-radius:20px 20px 0 0; max-height:90%; overflow-y:auto; animation:slideUpSheet 0.3s cubic-bezier(0.32,0.72,0,1);">
+          <div style="display:flex; justify-content:center; padding:10px 0 0;"><div style="width:36px; height:5px; background:#d1d1d6; border-radius:3px;"></div></div>
+          <div style="display:flex; justify-content:space-between; align-items:center; padding:14px 20px 12px;">
+            <button onClick="{{ closeEdit }}" style="background:none; border:none; font-size:17px; color:#007aff; cursor:pointer; min-width:60px;">Cancel</button>
+            <span style="font-size:17px; font-weight:600; color:#000;">Edit Task</span>
+            <button onClick="{{ saveEdit }}" style="background:none; border:none; font-size:17px; color:#007aff; font-weight:600; cursor:pointer; min-width:60px; text-align:right;">Save</button>
+          </div>
+          <div style="padding:0 16px 40px; display:flex; flex-direction:column; gap:10px;">
+            <div style="background:white; border-radius:12px; padding:14px 16px;">
+              <input value="{{ editForm.title }}" onChange="{{ handleEditTitle }}" placeholder="Task title" style="width:100%; border:none; font-size:17px; color:#000; background:transparent;">
+            </div>
+            <div style="background:white; border-radius:12px; padding:14px 16px;">
+              <textarea value="{{ editForm.notes }}" onChange="{{ handleEditNotes }}" placeholder="Notes" rows="3" style="width:100%; border:none; font-size:15px; color:#000; background:transparent; resize:none; line-height:1.4;"></textarea>
+            </div>
+            <div style="background:white; border-radius:12px; overflow:hidden;">
+              <div style="display:flex; align-items:center; padding:14px 16px; border-bottom:0.5px solid rgba(60,60,67,0.18);">
+                <span style="font-size:17px; color:#000; flex:1;">Priority</span>
+                <select value="{{ editForm.priority }}" onChange="{{ handleEditPriority }}" style="border:none; background:transparent; font-size:17px; color:#007aff; cursor:pointer; max-width:160px;">
+                  <option value="">None</option><option value="High">High</option><option value="Medium">Medium</option><option value="Low">Low</option>
+                </select>
+              </div>
+              <div style="display:flex; align-items:center; padding:14px 16px; border-bottom:0.5px solid rgba(60,60,67,0.18);">
+                <span style="font-size:17px; color:#000; flex:1;">Source</span>
+                <select value="{{ editForm.source }}" onChange="{{ handleEditSource }}" style="border:none; background:transparent; font-size:17px; color:#007aff; cursor:pointer; max-width:160px;">
+                  <option value="">None</option><option value="Manual">Manual</option><option value="Outlook">Outlook</option><option value="Teams">Teams</option><option value="iMessage">iMessage</option><option value="Other">Other</option>
+                </select>
+              </div>
+              <div style="display:flex; align-items:center; padding:14px 16px; border-bottom:0.5px solid rgba(60,60,67,0.18);">
+                <span style="font-size:17px; color:#000; flex:1;">Due Date</span>
+                <input type="date" value="{{ editForm.dueDate }}" onChange="{{ handleEditDueDate }}" style="border:none; background:transparent; font-size:15px; color:#007aff; cursor:pointer; max-width:160px;">
+              </div>
+              <div style="display:flex; align-items:center; padding:14px 16px;">
+                <span style="font-size:17px; color:#000; flex:1;">Tags</span>
+                <input value="{{ editForm.tags }}" onChange="{{ handleEditTags }}" placeholder="finance, urgent…" style="border:none; background:transparent; font-size:15px; color:#007aff; text-align:right; max-width:160px;">
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+
+  </div>
+
+</x-import>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = {
+    todos: [
+      { id:'1', title:'Review Q3 budget report', completed:false, flagged:true, priority:'High', dueDate:'07/01/2026', source:'Outlook', notes:'Check capital allocations against last quarter projections', tags:'finance,quarterly', createdAt:'2026-06-20T10:00:00Z' },
+      { id:'2', title:'Schedule team 1:1s for July', completed:false, flagged:false, priority:'Medium', dueDate:'06/30/2026', source:'Teams', notes:null, tags:'hr,scheduling', createdAt:'2026-06-21T09:00:00Z' },
+      { id:'3', title:'Update onboarding documentation', completed:true, flagged:false, priority:'Low', dueDate:null, source:'Manual', notes:'Include new security protocols', tags:'docs', createdAt:'2026-06-18T14:00:00Z' },
+      { id:'4', title:'Follow up with vendor on contract renewal', completed:false, flagged:true, priority:'High', dueDate:'06/28/2026', source:'iMessage', notes:null, tags:'legal,vendor', createdAt:'2026-06-22T11:00:00Z' },
+      { id:'5', title:'Prepare slides for board meeting', completed:false, flagged:false, priority:'Medium', dueDate:'07/05/2026', source:'Outlook', notes:'Market analysis and growth projections', tags:'presentation,board', createdAt:'2026-06-23T08:00:00Z' },
+    ],
+    filter: 'all',
+    showAddModal: false,
+    editTodoId: null,
+    addForm: { title:'', priority:'', source:'', dueDate:'', notes:'', tags:'' },
+    editForm: { title:'', priority:'', source:'', dueDate:'', notes:'', tags:'' },
+    nextId: 6,
+  };
+
+  componentDidMount() {
+    this._onKey = (e) => {
+      if (e.key !== 'Escape') return;
+      this.setState(s => {
+        if (s.showAddModal) return { showAddModal:false, addForm:{title:'',priority:'',source:'',dueDate:'',notes:'',tags:''} };
+        if (s.editTodoId) return { editTodoId:null, editForm:{title:'',priority:'',source:'',dueDate:'',notes:'',tags:''} };
+        return null;
+      });
+    };
+    document.addEventListener('keydown', this._onKey);
+  }
+  componentWillUnmount() { document.removeEventListener('keydown', this._onKey); }
+
+  toInputDate(s) { if (!s) return ''; const [m,d,y]=s.split('/'); return (m&&d&&y)?`${y}-${m.padStart(2,'0')}-${d.padStart(2,'0')}`:''; }
+  fromInputDate(s) { if (!s) return null; const [y,m,d]=s.split('-'); return (y&&m&&d)?`${m}/${d}/${y}`:null; }
+  isOverdue(dueDate) {
+    if (!dueDate) return false;
+    const [m,d,y]=dueDate.split('/');
+    const due=new Date(`${y}-${m}-${d}`);
+    const today=new Date(); today.setHours(0,0,0,0);
+    return !isNaN(due.getTime())&&due<today;
+  }
+
+  toggleComplete(id) { this.setState(s=>({todos:s.todos.map(t=>t.id===id?{...t,completed:!t.completed}:t)})); }
+  toggleFlag(id) {
+    this.setState(s=>({todos:s.todos.map(t=>{
+      if(t.id!==id) return t;
+      const f=!t.flagged;
+      return {...t,flagged:f,priority:f?'High':(t.priority==='High'?null:t.priority)};
+    })}));
+  }
+  deleteTodo(id) { this.setState(s=>({todos:s.todos.filter(t=>t.id!==id)})); }
+  openEdit(id) {
+    const todo=this.state.todos.find(t=>t.id===id);
+    if(!todo) return;
+    this.setState({editTodoId:id, editForm:{title:todo.title||'',priority:todo.priority||'',source:todo.source||'',dueDate:this.toInputDate(todo.dueDate),notes:todo.notes||'',tags:todo.tags||''}});
+  }
+  closeEdit() { this.setState({editTodoId:null,editForm:{title:'',priority:'',source:'',dueDate:'',notes:'',tags:''}}); }
+  saveEdit() {
+    const {editTodoId,editForm}=this.state;
+    if(!editTodoId||!editForm.title.trim()) return;
+    this.setState(s=>({
+      todos:s.todos.map(t=>t.id===editTodoId?{...t,title:editForm.title.trim(),priority:editForm.priority||null,source:editForm.source||null,dueDate:this.fromInputDate(editForm.dueDate),notes:editForm.notes.trim()||null,tags:editForm.tags.trim()||null,flagged:editForm.priority==='High'}:t),
+      editTodoId:null, editForm:{title:'',priority:'',source:'',dueDate:'',notes:'',tags:''},
+    }));
+  }
+  submitAdd() {
+    const {addForm,nextId}=this.state;
+    if(!addForm.title.trim()) return;
+    this.setState(s=>({
+      todos:[...s.todos,{id:String(nextId),title:addForm.title.trim(),completed:false,flagged:addForm.priority==='High',priority:addForm.priority||null,source:addForm.source||null,dueDate:this.fromInputDate(addForm.dueDate),notes:addForm.notes.trim()||null,tags:addForm.tags.trim()||null,attachmentSummary:null,createdAt:new Date().toISOString()}],
+      showAddModal:false, addForm:{title:'',priority:'',source:'',dueDate:'',notes:'',tags:''}, nextId:s.nextId+1,
+    }));
+  }
+
+  renderVals() {
+    const {filter,showAddModal,editTodoId,addForm,editForm,todos}=this.state;
+    const total=todos.length;
+    const completedCount=todos.filter(t=>t.completed).length;
+    const activeCount=total-completedCount;
+    const progressWidth=total>0?Math.round((completedCount/total)*100)+'%':'0%';
+    const self=this;
+
+    const filtered=todos.filter(t=>filter==='active'?!t.completed:filter==='completed'?t.completed:true);
+    const enrichedTodos=filtered.map(todo=>({
+      ...todo,
+      notCompleted:!todo.completed, notFlagged:!todo.flagged,
+      onToggle:()=>self.toggleComplete(todo.id),
+      onFlag:()=>self.toggleFlag(todo.id),
+      onEdit:()=>self.openEdit(todo.id),
+      onDelete:()=>self.deleteTodo(todo.id),
+      isHighPriority:todo.priority==='High',
+      isMediumPriority:todo.priority==='Medium',
+      isLowPriority:todo.priority==='Low',
+      hasTags:!!(todo.tags&&todo.tags.trim()),
+      tagList:todo.tags?todo.tags.split(',').map(t=>t.trim()).filter(Boolean):[],
+      hasDueDate:!!todo.dueDate, dueDateDisplay:todo.dueDate||'',
+      isOverdue:self.isOverdue(todo.dueDate)&&!todo.completed,
+      notOverdue:!(self.isOverdue(todo.dueDate)&&!todo.completed),
+      hasSource:!!todo.source, hasNotes:!!todo.notes,
+      notesPreview:todo.notes?(todo.notes.length>80?todo.notes.slice(0,80)+'…':todo.notes):'',
+      checkboxBg:todo.completed?'#007aff':'white',
+      checkboxBorder:todo.completed?'#007aff':'#c7c7cc',
+    }));
+
+    const seg=(name)=>({
+      bg:filter===name?'white':'transparent',
+      color:filter===name?'#000':'#636366',
+      weight:filter===name?'600':'400',
+      shadow:filter===name?'0 1px 3px rgba(0,0,0,0.12),0 1px 1px rgba(0,0,0,0.06)':'none',
+    });
+    const all=seg('all'),actv=seg('active'),done=seg('completed');
+
+    return {
+      total, activeCount, completedCount, progressWidth,
+      filterAll:()=>self.setState({filter:'all'}),
+      filterActive:()=>self.setState({filter:'active'}),
+      filterCompleted:()=>self.setState({filter:'completed'}),
+      tabAllBg:all.bg, tabAllColor:all.color, tabAllWeight:all.weight, tabAllShadow:all.shadow,
+      tabActiveBg:actv.bg, tabActiveColor:actv.color, tabActiveWeight:actv.weight, tabActiveShadow:actv.shadow,
+      tabDoneBg:done.bg, tabDoneColor:done.color, tabDoneWeight:done.weight, tabDoneShadow:done.shadow,
+      enrichedTodos, isEmpty:enrichedTodos.length===0,
+      showAddModal,
+      openAdd:()=>self.setState({showAddModal:true}),
+      closeAdd:()=>self.setState({showAddModal:false,addForm:{title:'',priority:'',source:'',dueDate:'',notes:'',tags:''}}),
+      submitAdd:()=>self.submitAdd(),
+      addForm,
+      handleAddTitle:(e)=>self.setState(s=>({addForm:{...s.addForm,title:e.target.value}})),
+      handleAddPriority:(e)=>self.setState(s=>({addForm:{...s.addForm,priority:e.target.value}})),
+      handleAddSource:(e)=>self.setState(s=>({addForm:{...s.addForm,source:e.target.value}})),
+      handleAddDueDate:(e)=>self.setState(s=>({addForm:{...s.addForm,dueDate:e.target.value}})),
+      handleAddNotes:(e)=>self.setState(s=>({addForm:{...s.addForm,notes:e.target.value}})),
+      handleAddTags:(e)=>self.setState(s=>({addForm:{...s.addForm,tags:e.target.value}})),
+      showEditModal:!!editTodoId,
+      closeEdit:()=>self.closeEdit(),
+      saveEdit:()=>self.saveEdit(),
+      editForm,
+      handleEditTitle:(e)=>self.setState(s=>({editForm:{...s.editForm,title:e.target.value}})),
+      handleEditPriority:(e)=>self.setState(s=>({editForm:{...s.editForm,priority:e.target.value}})),
+      handleEditSource:(e)=>self.setState(s=>({editForm:{...s.editForm,source:e.target.value}})),
+      handleEditDueDate:(e)=>self.setState(s=>({editForm:{...s.editForm,dueDate:e.target.value}})),
+      handleEditNotes:(e)=>self.setState(s=>({editForm:{...s.editForm,notes:e.target.value}})),
+      handleEditTags:(e)=>self.setState(s=>({editForm:{...s.editForm,tags:e.target.value}})),
+      stopPropagation:(e)=>e.stopPropagation(),
+    };
+  }
+}
+</script>
+</body>
+</html>
