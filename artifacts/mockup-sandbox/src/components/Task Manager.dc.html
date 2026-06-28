@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<template id="__bundler_thumbnail" data-bg-color="#f2f2f7">
+  <svg viewBox="0 0 390 844" xmlns="http://www.w3.org/2000/svg">
+    <rect width="390" height="844" fill="#f2f2f7"></rect>
+    <rect x="20" y="60" width="350" height="50" rx="12" fill="white"></rect>
+    <rect x="36" y="78" width="120" height="14" rx="4" fill="#007aff" opacity="0.8"></rect>
+    <rect x="20" y="126" width="110" height="44" rx="10" fill="white"></rect>
+    <rect x="140" y="126" width="110" height="44" rx="10" fill="white"></rect>
+    <rect x="260" y="126" width="110" height="44" rx="10" fill="white"></rect>
+    <rect x="20" y="182" width="350" height="32" rx="9" fill="rgba(118,118,128,0.12)"></rect>
+    <rect x="22" y="184" width="112" height="28" rx="7" fill="white"></rect>
+    <rect x="20" y="228" width="350" height="1" fill="#e5e5ea"></rect>
+    <rect x="20" y="230" width="350" height="420" rx="12" fill="white"></rect>
+    <circle cx="50" cy="270" r="12" stroke="#c7c7cc" stroke-width="2" fill="none"></circle>
+    <rect x="74" y="262" width="180" height="10" rx="4" fill="#000" opacity="0.8"></rect>
+    <rect x="74" y="278" width="80" height="8" rx="4" fill="#ffeae8"></rect>
+    <circle cx="50" cy="330" r="12" stroke="#c7c7cc" stroke-width="2" fill="none"></circle>
+    <rect x="74" y="322" width="140" height="10" rx="4" fill="#000" opacity="0.8"></rect>
+    <rect x="74" y="338" width="60" height="8" rx="4" fill="#fff3e0"></rect>
+    <circle cx="50" cy="390" r="12" fill="#007aff"></circle>
+    <path d="M44 390l5 5 9-9" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"></path>
+    <rect x="74" y="382" width="160" height="10" rx="4" fill="#aeaeb2"></rect>
+    <circle cx="330" cy="780" r="28" fill="#007aff"></circle>
+    <path d="M322 780h16M330 772v16" stroke="white" stroke-width="2.5" stroke-linecap="round"></path>
+  </svg>
+</template>
+<helmet>
+<style>
+* { box-sizing:border-box; margin:0; padding:0; }
+body { background:#f2f2f7; font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text',system-ui,sans-serif; min-height:100vh; }
+input,select,textarea,button { font-family:inherit; -webkit-tap-highlight-color:transparent; }
+input:focus,select:focus,textarea:focus { outline:none; }
+@keyframes slideUpSheet { from { transform:translateY(100%); } to { transform:translateY(0); } }
+@keyframes backdropFade { from { opacity:0; } to { opacity:1; } }
+@keyframes spin { to { transform:rotate(360deg); } }
+</style>
+</helmet>
+
+<div style="min-height:100vh; background:#f2f2f7; max-width:480px; margin:0 auto;">
+
+  <!-- HEADER -->
+  <header style="position:sticky; top:0; z-index:20; background:rgba(242,242,247,0.92); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px); border-bottom:0.5px solid rgba(60,60,67,0.2); padding:14px 20px 10px;">
+    <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:10px;">
+      <h1 style="font-size:34px; font-weight:700; color:#000; letter-spacing:-0.5px; line-height:1;">Tasks</h1>
+      <div style="display:flex; align-items:center; gap:10px; padding-bottom:6px;">
+        <span style="font-size:13px; color:#8e8e93;">{{ completedCount }}/{{ total }} done</span>
+        <button onClick="{{ openSettings }}" style="background:none; border:none; width:32px; height:32px; display:flex; align-items:center; justify-content:center; cursor:pointer; color:#8e8e93;" style-active="color:#007aff;">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="3" stroke="currentColor" stroke-width="1.6"></circle><path d="M9 1v2M9 15v2M1 9h2M15 9h2M3.22 3.22l1.41 1.41M13.37 13.37l1.41 1.41M3.22 14.78l1.41-1.41M13.37 4.63l1.41-1.41" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"></path></svg>
+        </button>
+      </div>
+    </div>
+    <div style="height:4px; background:#e5e5ea; border-radius:2px; overflow:hidden;">
+      <div style="height:4px; background:#007aff; border-radius:2px; width:{{ progressWidth }}; transition:width 0.4s ease;"></div>
+    </div>
+  </header>
+
+  <div style="padding:14px 16px 120px;">
+
+    <!-- STATS -->
+    <div style="display:flex; gap:8px; margin-bottom:14px;">
+      <div style="flex:1; background:white; border-radius:12px; padding:12px 14px;">
+        <div style="font-size:26px; font-weight:700; color:#007aff; line-height:1;">{{ activeCount }}</div>
+        <div style="font-size:12px; color:#8e8e93; margin-top:2px;">Active</div>
+      </div>
+      <div style="flex:1; background:white; border-radius:12px; padding:12px 14px;">
+        <div style="font-size:26px; font-weight:700; color:#34c759; line-height:1;">{{ completedCount }}</div>
+        <div style="font-size:12px; color:#8e8e93; margin-top:2px;">Done</div>
+      </div>
+      <div style="flex:1; background:white; border-radius:12px; padding:12px 14px;">
+        <div style="font-size:26px; font-weight:700; color:#000; line-height:1;">{{ total }}</div>
+        <div style="font-size:12px; color:#8e8e93; margin-top:2px;">Total</div>
+      </div>
+    </div>
+
+    <!-- SEGMENTED CONTROL -->
+    <div style="background:rgba(118,118,128,0.12); border-radius:9px; padding:2px; display:flex; gap:2px; margin-bottom:16px;">
+      <button onClick="{{ filterAll }}" style="flex:1; height:32px; border:none; border-radius:7px; background:{{ tabAllBg }}; color:{{ tabAllColor }}; font-size:13px; font-weight:{{ tabAllWeight }}; cursor:pointer; box-shadow:{{ tabAllShadow }}; transition:all 0.2s;">All</button>
+      <button onClick="{{ filterActive }}" style="flex:1; height:32px; border:none; border-radius:7px; background:{{ tabActiveBg }}; color:{{ tabActiveColor }}; font-size:13px; font-weight:{{ tabActiveWeight }}; cursor:pointer; box-shadow:{{ tabActiveShadow }}; transition:all 0.2s;">Active</button>
+      <button onClick="{{ filterCompleted }}" style="flex:1; height:32px; border:none; border-radius:7px; background:{{ tabDoneBg }}; color:{{ tabDoneColor }}; font-size:13px; font-weight:{{ tabDoneWeight }}; cursor:pointer; box-shadow:{{ tabDoneShadow }}; transition:all 0.2s;">Done</button>
+    </div>
+
+    <!-- ERROR BANNER -->
+    <sc-if value="{{ error }}" hint-placeholder-val="{{ false }}">
+      <div style="background:#ffeae8; border:1px solid #ffccc7; border-radius:12px; padding:12px 16px; margin-bottom:12px; display:flex; align-items:center; gap:10px;">
+        <span style="font-size:16px;">⚠</span>
+        <p style="font-size:14px; color:#c0392b; flex:1;">{{ error }}</p>
+        <button onClick="{{ dismissError }}" style="background:none; border:none; font-size:13px; color:#c0392b; cursor:pointer; font-weight:600;">Dismiss</button>
+      </div>
+    </sc-if>
+
+    <!-- TASK LIST -->
+    <div style="background:white; border-radius:12px; overflow:hidden;">
+
+      <!-- Loading state -->
+      <sc-if value="{{ loading }}" hint-placeholder-val="{{ true }}">
+        <div style="padding:48px 20px; text-align:center;">
+          <div style="width:28px; height:28px; border:3px solid #e5e5ea; border-top-color:#007aff; border-radius:50%; margin:0 auto 14px; animation:spin 0.7s linear infinite;"></div>
+          <p style="font-size:15px; color:#8e8e93;">Loading tasks…</p>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ notLoading }}" hint-placeholder-val="{{ false }}">
+      <sc-for list="{{ enrichedTodos }}" as="todo" hint-placeholder-count="4">
+        <div style="display:flex; align-items:flex-start; padding:14px 16px; border-bottom:0.5px solid rgba(60,60,67,0.18); gap:13px;">
+
+          <!-- Checkbox -->
+          <div onClick="{{ todo.onToggle }}" style="width:28px; height:28px; min-width:28px; border-radius:50%; background:{{ todo.checkboxBg }}; border:2.5px solid {{ todo.checkboxBorder }}; display:flex; align-items:center; justify-content:center; cursor:pointer; margin-top:1px; transition:all 0.15s;">
+            <sc-if value="{{ todo.completed }}" hint-placeholder-val="{{ false }}">
+              <svg width="13" height="10" viewBox="0 0 13 10" fill="none"><path d="M1.5 5.5L5 9l6.5-8" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+            </sc-if>
+          </div>
+
+          <!-- Content -->
+          <div style="flex:1; min-width:0;">
+            <sc-if value="{{ todo.completed }}" hint-placeholder-val="{{ false }}">
+              <p style="font-size:17px; color:#aeaeb2; text-decoration:line-through; line-height:1.35; text-wrap:pretty;">{{ todo.title }}</p>
+            </sc-if>
+            <sc-if value="{{ todo.notCompleted }}" hint-placeholder-val="{{ true }}">
+              <p style="font-size:17px; color:#000; line-height:1.35; text-wrap:pretty;">{{ todo.title }}</p>
+            </sc-if>
+
+            <div style="display:flex; flex-wrap:wrap; gap:5px; margin-top:6px; align-items:center;">
+              <sc-if value="{{ todo.isHighPriority }}" hint-placeholder-val="{{ false }}">
+                <span style="background:#ffeae8; color:#ff3b30; font-size:11px; font-weight:600; padding:3px 8px; border-radius:20px;">HIGH</span>
+              </sc-if>
+              <sc-if value="{{ todo.isMediumPriority }}" hint-placeholder-val="{{ false }}">
+                <span style="background:#fff3e0; color:#ff9500; font-size:11px; font-weight:600; padding:3px 8px; border-radius:20px;">MED</span>
+              </sc-if>
+              <sc-if value="{{ todo.isLowPriority }}" hint-placeholder-val="{{ false }}">
+                <span style="background:#e8fae8; color:#34c759; font-size:11px; font-weight:600; padding:3px 8px; border-radius:20px;">LOW</span>
+              </sc-if>
+              <sc-if value="{{ todo.hasSource }}" hint-placeholder-val="{{ false }}">
+                <span style="background:#f2f2f7; color:#636366; font-size:12px; padding:3px 8px; border-radius:20px;">{{ todo.source }}</span>
+              </sc-if>
+              <sc-if value="{{ todo.hasDueDate }}" hint-placeholder-val="{{ false }}">
+                <sc-if value="{{ todo.isOverdue }}" hint-placeholder-val="{{ false }}">
+                  <span style="background:#ffeae8; color:#ff3b30; font-size:12px; padding:3px 8px; border-radius:20px; font-weight:500;">⚠ {{ todo.dueDateDisplay }}</span>
+                </sc-if>
+                <sc-if value="{{ todo.notOverdue }}" hint-placeholder-val="{{ true }}">
+                  <span style="color:#8e8e93; font-size:12px;">{{ todo.dueDateDisplay }}</span>
+                </sc-if>
+              </sc-if>
+            </div>
+
+            <sc-if value="{{ todo.hasNotes }}" hint-placeholder-val="{{ false }}">
+              <p style="margin-top:4px; font-size:13px; color:#aeaeb2; line-height:1.35;">{{ todo.notesPreview }}</p>
+            </sc-if>
+
+            <sc-if value="{{ todo.hasTags }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex; flex-wrap:wrap; gap:4px; margin-top:7px;">
+                <sc-for list="{{ todo.tagList }}" as="tag" hint-placeholder-count="2">
+                  <span style="background:#e8f0ff; color:#007aff; font-size:12px; padding:3px 8px; border-radius:20px; font-weight:500;">#{{ tag }}</span>
+                </sc-for>
+              </div>
+            </sc-if>
+          </div>
+
+          <!-- Actions -->
+          <div style="display:flex; flex-direction:column; align-items:center; gap:0; flex-shrink:0; margin-top:-4px;">
+            <sc-if value="{{ todo.flagged }}" hint-placeholder-val="{{ false }}">
+              <button onClick="{{ todo.onFlag }}" style="background:none; border:none; width:44px; height:44px; display:flex; align-items:center; justify-content:center; cursor:pointer;">
+                <svg width="14" height="16" viewBox="0 0 14 16" fill="none"><path d="M2 1v14" stroke="#ff3b30" stroke-width="1.8" stroke-linecap="round"></path><path d="M2 1.5h10l-3 5.5 3 5.5H2" stroke="#ff3b30" stroke-width="1.8" stroke-linejoin="round" fill="#ffeae8"></path></svg>
+              </button>
+            </sc-if>
+            <sc-if value="{{ todo.notFlagged }}" hint-placeholder-val="{{ true }}">
+              <button onClick="{{ todo.onFlag }}" style="background:none; border:none; width:44px; height:44px; display:flex; align-items:center; justify-content:center; cursor:pointer;">
+                <svg width="14" height="16" viewBox="0 0 14 16" fill="none"><path d="M2 1v14" stroke="#c7c7cc" stroke-width="1.8" stroke-linecap="round"></path><path d="M2 1.5h10l-3 5.5 3 5.5H2" stroke="#c7c7cc" stroke-width="1.8" stroke-linejoin="round"></path></svg>
+              </button>
+            </sc-if>
+            <button onClick="{{ todo.onEdit }}" style="background:none; border:none; width:44px; height:44px; display:flex; align-items:center; justify-content:center; cursor:pointer; color:#c7c7cc;">
+              <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M11 2l2 2-8 8-3 1 1-3z" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+            </button>
+            <button onClick="{{ todo.onDelete }}" style="background:none; border:none; width:44px; height:44px; display:flex; align-items:center; justify-content:center; cursor:pointer; color:#c7c7cc;">
+              <svg width="13" height="15" viewBox="0 0 13 15" fill="none"><path d="M1 4.5h11M4.5 4.5v-2h4v2M2 4.5l.5 9h8l.5-9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+            </button>
+          </div>
+        </div>
+      </sc-for>
+
+      <!-- Empty state -->
+      <sc-if value="{{ isEmpty }}" hint-placeholder-val="{{ false }}">
+        <div style="padding:64px 20px; text-align:center;">
+          <div style="font-size:52px; margin-bottom:12px; opacity:0.25;">✓</div>
+          <p style="font-size:17px; font-weight:600; color:#000; margin-bottom:5px;">Nothing here</p>
+          <p style="font-size:15px; color:#8e8e93;">Tap + to add a task</p>
+        </div>
+      </sc-if>
+      </sc-if>
+    </div>
+  </div>
+
+  <!-- FAB -->
+  <button onClick="{{ openAdd }}" style="position:fixed; right:24px; bottom:32px; width:60px; height:60px; border-radius:30px; background:#007aff; border:none; cursor:pointer; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 20px rgba(0,122,255,0.45); z-index:30;" style-active="background:#0062cc; transform:scale(0.95);">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M12 4v16M4 12h16" stroke="white" stroke-width="2.5" stroke-linecap="round"></path></svg>
+  </button>
+
+  <!-- SETTINGS SHEET -->
+  <sc-if value="{{ showSettings }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ closeSettings }}" style="position:fixed; inset:0; background:rgba(0,0,0,0.35); z-index:50; display:flex; flex-direction:column; justify-content:flex-end; animation:backdropFade 0.2s ease;">
+      <div onClick="{{ stopPropagation }}" style="background:#f2f2f7; border-radius:20px 20px 0 0; overflow-y:auto; animation:slideUpSheet 0.3s cubic-bezier(0.32,0.72,0,1);">
+        <div style="display:flex; justify-content:center; padding:10px 0 0;"><div style="width:36px; height:5px; background:#c7c7cc; border-radius:3px;"></div></div>
+        <div style="display:flex; justify-content:space-between; align-items:center; padding:14px 20px 12px;">
+          <button onClick="{{ closeSettings }}" style="background:none; border:none; font-size:17px; color:#007aff; cursor:pointer; min-width:64px;">Cancel</button>
+          <span style="font-size:17px; font-weight:600; color:#000;">Airtable Setup</span>
+          <button onClick="{{ saveSettings }}" style="background:none; border:none; font-size:17px; color:#007aff; font-weight:600; cursor:pointer; min-width:64px; text-align:right;">Save</button>
+        </div>
+        <div style="padding:0 16px 48px; display:flex; flex-direction:column; gap:10px;">
+          <p style="font-size:13px; color:#8e8e93; padding:0 4px;">Your credentials are stored locally on this device only — never sent anywhere except Airtable.</p>
+          <div style="background:white; border-radius:12px; overflow:hidden;">
+            <div style="padding:14px 16px; border-bottom:0.5px solid rgba(60,60,67,0.18);">
+              <div style="font-size:12px; color:#8e8e93; margin-bottom:4px; text-transform:uppercase; letter-spacing:0.4px;">Personal Access Token</div>
+              <input value="{{ settingsForm.pat }}" onChange="{{ handleSettingsPat }}" placeholder="patXXXXXX…" style="width:100%; border:none; font-size:15px; color:#000; background:transparent; font-family:monospace;">
+            </div>
+            <div style="padding:14px 16px; border-bottom:0.5px solid rgba(60,60,67,0.18);">
+              <div style="font-size:12px; color:#8e8e93; margin-bottom:4px; text-transform:uppercase; letter-spacing:0.4px;">Base ID</div>
+              <input value="{{ settingsForm.baseId }}" onChange="{{ handleSettingsBase }}" placeholder="appXXXXXX…" style="width:100%; border:none; font-size:15px; color:#000; background:transparent; font-family:monospace;">
+            </div>
+            <div style="padding:14px 16px;">
+              <div style="font-size:12px; color:#8e8e93; margin-bottom:4px; text-transform:uppercase; letter-spacing:0.4px;">Table Name</div>
+              <input value="{{ settingsForm.tableName }}" onChange="{{ handleSettingsTable }}" placeholder="To Do" style="width:100%; border:none; font-size:15px; color:#000; background:transparent;">
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- ADD SHEET -->
+  <sc-if value="{{ showAddModal }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ closeAdd }}" style="position:fixed; inset:0; background:rgba(0,0,0,0.35); z-index:50; display:flex; flex-direction:column; justify-content:flex-end; animation:backdropFade 0.2s ease;">
+      <div onClick="{{ stopPropagation }}" style="background:#f2f2f7; border-radius:20px 20px 0 0; max-height:92vh; overflow-y:auto; animation:slideUpSheet 0.3s cubic-bezier(0.32,0.72,0,1);">
+        <div style="display:flex; justify-content:center; padding:10px 0 0;"><div style="width:36px; height:5px; background:#c7c7cc; border-radius:3px;"></div></div>
+        <div style="display:flex; justify-content:space-between; align-items:center; padding:14px 20px 12px;">
+          <button onClick="{{ closeAdd }}" style="background:none; border:none; font-size:17px; color:#007aff; cursor:pointer; min-width:64px;">Cancel</button>
+          <span style="font-size:17px; font-weight:600; color:#000;">New Task</span>
+          <button onClick="{{ submitAdd }}" style="background:none; border:none; font-size:17px; color:#007aff; font-weight:600; cursor:pointer; min-width:64px; text-align:right;">Add</button>
+        </div>
+        <div style="padding:0 16px 48px; display:flex; flex-direction:column; gap:12px;">
+          <div style="background:white; border-radius:12px; padding:14px 16px;">
+            <input value="{{ addForm.title }}" onChange="{{ handleAddTitle }}" placeholder="Task title" style="width:100%; border:none; font-size:17px; color:#000; background:transparent;">
+          </div>
+          <div style="background:white; border-radius:12px; padding:14px 16px;">
+            <textarea value="{{ addForm.notes }}" onChange="{{ handleAddNotes }}" placeholder="Notes" rows="3" style="width:100%; border:none; font-size:15px; color:#000; background:transparent; resize:none; line-height:1.4;"></textarea>
+          </div>
+          <div style="background:white; border-radius:12px; overflow:hidden;">
+            <div style="display:flex; align-items:center; padding:14px 16px; border-bottom:0.5px solid rgba(60,60,67,0.18); min-height:52px;">
+              <span style="font-size:17px; color:#000; flex:1;">Priority</span>
+              <select value="{{ addForm.priority }}" onChange="{{ handleAddPriority }}" style="border:none; background:transparent; font-size:17px; color:#007aff; cursor:pointer;">
+                <option value="">None</option><option value="High">High</option><option value="Medium">Medium</option><option value="Low">Low</option>
+              </select>
+            </div>
+            <div style="display:flex; align-items:center; padding:14px 16px; border-bottom:0.5px solid rgba(60,60,67,0.18); min-height:52px;">
+              <span style="font-size:17px; color:#000; flex:1;">Source</span>
+              <select value="{{ addForm.source }}" onChange="{{ handleAddSource }}" style="border:none; background:transparent; font-size:17px; color:#007aff; cursor:pointer;">
+                <option value="">None</option><option value="Manual">Manual</option><option value="Outlook">Outlook</option><option value="Teams">Teams</option><option value="iMessage">iMessage</option><option value="Other">Other</option>
+              </select>
+            </div>
+            <div style="display:flex; align-items:center; padding:14px 16px; border-bottom:0.5px solid rgba(60,60,67,0.18); min-height:52px;">
+              <span style="font-size:17px; color:#000; flex:1;">Due Date</span>
+              <input type="date" value="{{ addForm.dueDate }}" onChange="{{ handleAddDueDate }}" style="border:none; background:transparent; font-size:15px; color:#007aff; cursor:pointer;">
+            </div>
+            <div style="display:flex; align-items:center; padding:14px 16px; min-height:52px;">
+              <span style="font-size:17px; color:#000; flex:1;">Tags</span>
+              <input value="{{ addForm.tags }}" onChange="{{ handleAddTags }}" placeholder="finance, urgent…" style="border:none; background:transparent; font-size:15px; color:#007aff; text-align:right; max-width:180px;">
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- EDIT SHEET -->
+  <sc-if value="{{ showEditModal }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ closeEdit }}" style="position:fixed; inset:0; background:rgba(0,0,0,0.35); z-index:50; display:flex; flex-direction:column; justify-content:flex-end; animation:backdropFade 0.2s ease;">
+      <div onClick="{{ stopPropagation }}" style="background:#f2f2f7; border-radius:20px 20px 0 0; max-height:92vh; overflow-y:auto; animation:slideUpSheet 0.3s cubic-bezier(0.32,0.72,0,1);">
+        <div style="display:flex; justify-content:center; padding:10px 0 0;"><div style="width:36px; height:5px; background:#c7c7cc; border-radius:3px;"></div></div>
+        <div style="display:flex; justify-content:space-between; align-items:center; padding:14px 20px 12px;">
+          <button onClick="{{ closeEdit }}" style="background:none; border:none; font-size:17px; color:#007aff; cursor:pointer; min-width:64px;">Cancel</button>
+          <span style="font-size:17px; font-weight:600; color:#000;">Edit Task</span>
+          <button onClick="{{ saveEdit }}" style="background:none; border:none; font-size:17px; color:#007aff; font-weight:600; cursor:pointer; min-width:64px; text-align:right;">Save</button>
+        </div>
+        <div style="padding:0 16px 48px; display:flex; flex-direction:column; gap:12px;">
+          <div style="background:white; border-radius:12px; padding:14px 16px;">
+            <input value="{{ editForm.title }}" onChange="{{ handleEditTitle }}" placeholder="Task title" style="width:100%; border:none; font-size:17px; color:#000; background:transparent;">
+          </div>
+          <div style="background:white; border-radius:12px; padding:14px 16px;">
+            <textarea value="{{ editForm.notes }}" onChange="{{ handleEditNotes }}" placeholder="Notes" rows="3" style="width:100%; border:none; font-size:15px; color:#000; background:transparent; resize:none; line-height:1.4;"></textarea>
+          </div>
+          <div style="background:white; border-radius:12px; overflow:hidden;">
+            <div style="display:flex; align-items:center; padding:14px 16px; border-bottom:0.5px solid rgba(60,60,67,0.18); min-height:52px;">
+              <span style="font-size:17px; color:#000; flex:1;">Priority</span>
+              <select value="{{ editForm.priority }}" onChange="{{ handleEditPriority }}" style="border:none; background:transparent; font-size:17px; color:#007aff; cursor:pointer;">
+                <option value="">None</option><option value="High">High</option><option value="Medium">Medium</option><option value="Low">Low</option>
+              </select>
+            </div>
+            <div style="display:flex; align-items:center; padding:14px 16px; border-bottom:0.5px solid rgba(60,60,67,0.18); min-height:52px;">
+              <span style="font-size:17px; color:#000; flex:1;">Source</span>
+              <select value="{{ editForm.source }}" onChange="{{ handleEditSource }}" style="border:none; background:transparent; font-size:17px; color:#007aff; cursor:pointer;">
+                <option value="">None</option><option value="Manual">Manual</option><option value="Outlook">Outlook</option><option value="Teams">Teams</option><option value="iMessage">iMessage</option><option value="Other">Other</option>
+              </select>
+            </div>
+            <div style="display:flex; align-items:center; padding:14px 16px; border-bottom:0.5px solid rgba(60,60,67,0.18); min-height:52px;">
+              <span style="font-size:17px; color:#000; flex:1;">Due Date</span>
+              <input type="date" value="{{ editForm.dueDate }}" onChange="{{ handleEditDueDate }}" style="border:none; background:transparent; font-size:15px; color:#007aff; cursor:pointer;">
+            </div>
+            <div style="display:flex; align-items:center; padding:14px 16px; min-height:52px;">
+              <span style="font-size:17px; color:#000; flex:1;">Tags</span>
+              <input value="{{ editForm.tags }}" onChange="{{ handleEditTags }}" placeholder="finance, urgent…" style="border:none; background:transparent; font-size:15px; color:#007aff; text-align:right; max-width:180px;">
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  LS_KEY = 'task_airtable_config';
+
+  getConfig() {
+    try { return JSON.parse(localStorage.getItem(this.LS_KEY) || '{}'); } catch(e) { return {}; }
+  }
+
+  state = {
+    todos: [],
+    loading: false,
+    error: null,
+    filter: 'all',
+    showAddModal: false,
+    editTodoId: null,
+    addForm: { title:'', priority:'', source:'', dueDate:'', notes:'', tags:'' },
+    editForm: { title:'', priority:'', source:'', dueDate:'', notes:'', tags:'' },
+    showSettings: false,
+    settingsForm: { pat:'', baseId:'', tableName:'' },
+    configured: false,
+  };
+
+  // ── Airtable helpers ──────────────────────────────────────
+  atUrl(id) {
+    const {baseId, tableName} = this.getConfig();
+    const base = `https://api.airtable.com/v0/${baseId}/${encodeURIComponent(tableName)}`;
+    return id ? `${base}/${id}` : base;
+  }
+  atHeaders() {
+    const {pat} = this.getConfig();
+    return { 'Authorization': `Bearer ${pat}`, 'Content-Type': 'application/json' };
+  }
+  recordToTodo(r) {
+    const f = r.fields || {};
+    return {
+      id: r.id,
+      title: f.Title || '',
+      completed: f.Status === 'Done',
+      flagged: f.Priority === 'High',
+      priority: f.Priority || null,
+      dueDate: f['Due Date'] || null,
+      source: f.Source || null,
+      notes: f.Notes || null,
+      tags: f.Tags || null,
+      createdAt: r.createdTime,
+    };
+  }
+
+  // ── Lifecycle ─────────────────────────────────────────────
+  componentDidMount() {
+    this._onKey = (e) => {
+      if (e.key !== 'Escape') return;
+      this.setState(s => {
+        if (s.showAddModal) return { showAddModal:false, addForm:{title:'',priority:'',source:'',dueDate:'',notes:'',tags:''} };
+        if (s.editTodoId) return { editTodoId:null, editForm:{title:'',priority:'',source:'',dueDate:'',notes:'',tags:''} };
+        if (s.showSettings) return { showSettings:false };
+        return null;
+      });
+    };
+    document.addEventListener('keydown', this._onKey);
+    const cfg = this.getConfig();
+    if (cfg.pat && cfg.baseId && cfg.tableName) {
+      this.setState({ configured: true });
+      this.loadTodos();
+    } else {
+      const sf = { pat: cfg.pat||'', baseId: cfg.baseId||'', tableName: cfg.tableName||'To Do' };
+      this.setState({ showSettings: true, settingsForm: sf });
+    }
+  }
+  componentWillUnmount() { document.removeEventListener('keydown', this._onKey); }
+
+  async loadTodos() {
+    this.setState({ loading: true, error: null });
+    try {
+      const res = await fetch(this.atUrl(), { headers: this.atHeaders() });
+      if (!res.ok) throw new Error(`Airtable error ${res.status}`);
+      const data = await res.json();
+      const todos = (data.records || [])
+        .map(r => this.recordToTodo(r))
+        .sort((a,b) => new Date(a.createdAt) - new Date(b.createdAt));
+      this.setState({ todos, loading: false });
+    } catch(e) {
+      this.setState({ loading: false, error: e.message });
+    }
+  }
+
+  // ── Date helpers ─────────────────────────────────────────
+  toInputDate(s) { if (!s) return ''; const [m,d,y]=s.split('/'); return (m&&d&&y)?`${y}-${m.padStart(2,'0')}-${d.padStart(2,'0')}`:''; }
+  fromInputDate(s) { if (!s) return null; const [y,m,d]=s.split('-'); return (y&&m&&d)?`${m}/${d}/${y}`:null; }
+  isOverdue(dueDate) {
+    if (!dueDate) return false;
+    const [m,d,y]=dueDate.split('/');
+    const due=new Date(`${y}-${m}-${d}`);
+    const today=new Date(); today.setHours(0,0,0,0);
+    return !isNaN(due.getTime())&&due<today;
+  }
+
+  // ── CRUD ─────────────────────────────────────────────────
+  async toggleComplete(id) {
+    const todo = this.state.todos.find(t=>t.id===id);
+    if (!todo) return;
+    const completed = !todo.completed;
+    // Optimistic update
+    this.setState(s=>({todos:s.todos.map(t=>t.id===id?{...t,completed}:t)}));
+    try {
+      await fetch(this.atUrl(id), {
+        method: 'PATCH',
+        headers: this.atHeaders(),
+        body: JSON.stringify({ fields: { Status: completed ? 'Done' : 'Open' } }),
+      });
+    } catch(e) {
+      // Revert on failure
+      this.setState(s=>({todos:s.todos.map(t=>t.id===id?{...t,completed:!completed}:t)}));
+    }
+  }
+
+  async toggleFlag(id) {
+    const todo = this.state.todos.find(t=>t.id===id);
+    if (!todo) return;
+    const flagged = !todo.flagged;
+    const priority = flagged ? 'High' : (todo.priority==='High' ? null : todo.priority);
+    this.setState(s=>({todos:s.todos.map(t=>t.id===id?{...t,flagged,priority}:t)}));
+    try {
+      await fetch(this.atUrl(id), {
+        method: 'PATCH',
+        headers: this.atHeaders(),
+        body: JSON.stringify({ fields: { Priority: priority || '' } }),
+      });
+    } catch(e) {
+      this.setState(s=>({todos:s.todos.map(t=>t.id===id?{...t,flagged:!flagged,priority:todo.priority}:t)}));
+    }
+  }
+
+  async deleteTodo(id) {
+    this.setState(s=>({todos:s.todos.filter(t=>t.id!==id)}));
+    try {
+      await fetch(this.atUrl(id), { method: 'DELETE', headers: this.atHeaders() });
+    } catch(e) {
+      this.loadTodos(); // Reload on failure
+    }
+  }
+
+  openEdit(id) {
+    const todo=this.state.todos.find(t=>t.id===id);
+    if(!todo) return;
+    this.setState({editTodoId:id, editForm:{title:todo.title||'',priority:todo.priority||'',source:todo.source||'',dueDate:this.toInputDate(todo.dueDate),notes:todo.notes||'',tags:todo.tags||''}});
+  }
+  closeEdit() { this.setState({editTodoId:null,editForm:{title:'',priority:'',source:'',dueDate:'',notes:'',tags:''}}); }
+
+  async saveEdit() {
+    const {editTodoId,editForm}=this.state;
+    if(!editTodoId||!editForm.title.trim()) return;
+    const dueDate = this.fromInputDate(editForm.dueDate);
+    const flagged = editForm.priority==='High';
+    // Optimistic
+    this.setState(s=>({
+      todos:s.todos.map(t=>t.id===editTodoId?{...t,title:editForm.title.trim(),priority:editForm.priority||null,source:editForm.source||null,dueDate,notes:editForm.notes.trim()||null,tags:editForm.tags.trim()||null,flagged}:t),
+      editTodoId:null, editForm:{title:'',priority:'',source:'',dueDate:'',notes:'',tags:''},
+    }));
+    try {
+      await fetch(this.atUrl(editTodoId), {
+        method: 'PATCH',
+        headers: this.atHeaders(),
+        body: JSON.stringify({ fields: {
+          Title: editForm.title.trim(),
+          Priority: editForm.priority || '',
+          Source: editForm.source || '',
+          'Due Date': dueDate || '',
+          Notes: editForm.notes.trim() || '',
+          Tags: editForm.tags.trim() || '',
+        }}),
+      });
+    } catch(e) {
+      this.loadTodos();
+    }
+  }
+
+  saveSettings() {
+    const {settingsForm} = this.state;
+    if (!settingsForm.pat.trim() || !settingsForm.baseId.trim() || !settingsForm.tableName.trim()) return;
+    localStorage.setItem(this.LS_KEY, JSON.stringify({
+      pat: settingsForm.pat.trim(),
+      baseId: settingsForm.baseId.trim(),
+      tableName: settingsForm.tableName.trim(),
+    }));
+    this.setState({ showSettings: false, configured: true });
+    this.loadTodos();
+  }
+
+  async submitAdd() {
+    const {addForm}=this.state;
+    if(!addForm.title.trim()) return;
+    this.setState({showAddModal:false, addForm:{title:'',priority:'',source:'',dueDate:'',notes:'',tags:''}});
+    try {
+      const res = await fetch(this.atUrl(), {
+        method: 'POST',
+        headers: this.atHeaders(),
+        body: JSON.stringify({ fields: {
+          Title: addForm.title.trim(),
+          Status: 'Open',
+          Priority: addForm.priority || '',
+          Source: addForm.source || '',
+          'Due Date': this.fromInputDate(addForm.dueDate) || '',
+          Notes: addForm.notes.trim() || '',
+          Tags: addForm.tags.trim() || '',
+        }}),
+      });
+      const data = await res.json();
+      const newTodo = this.recordToTodo(data);
+      this.setState(s=>({ todos: [...s.todos, newTodo] }));
+    } catch(e) {
+      this.setState({ error: 'Failed to save task. Please try again.' });
+    }
+  }
+
+  renderVals() {
+    const {filter,showAddModal,editTodoId,addForm,editForm,todos,loading,error}=this.state;
+    const total=todos.length;
+    const completedCount=todos.filter(t=>t.completed).length;
+    const activeCount=total-completedCount;
+    const progressWidth=total>0?Math.round((completedCount/total)*100)+'%':'0%';
+    const self=this;
+
+    const filtered=todos.filter(t=>filter==='active'?!t.completed:filter==='completed'?t.completed:true);
+    const enrichedTodos=filtered.map(todo=>({
+      ...todo,
+      notCompleted:!todo.completed, notFlagged:!todo.flagged,
+      onToggle:()=>self.toggleComplete(todo.id),
+      onFlag:()=>self.toggleFlag(todo.id),
+      onEdit:()=>self.openEdit(todo.id),
+      onDelete:()=>self.deleteTodo(todo.id),
+      isHighPriority:todo.priority==='High',
+      isMediumPriority:todo.priority==='Medium',
+      isLowPriority:todo.priority==='Low',
+      hasTags:!!(todo.tags&&todo.tags.trim()),
+      tagList:todo.tags?todo.tags.split(',').map(t=>t.trim()).filter(Boolean):[],
+      hasDueDate:!!todo.dueDate, dueDateDisplay:todo.dueDate||'',
+      isOverdue:self.isOverdue(todo.dueDate)&&!todo.completed,
+      notOverdue:!(self.isOverdue(todo.dueDate)&&!todo.completed),
+      hasSource:!!todo.source, hasNotes:!!todo.notes,
+      notesPreview:todo.notes?(todo.notes.length>80?todo.notes.slice(0,80)+'…':todo.notes):'',
+      checkboxBg:todo.completed?'#007aff':'white',
+      checkboxBorder:todo.completed?'#007aff':'#c7c7cc',
+    }));
+
+    const seg=(name)=>({
+      bg:filter===name?'white':'transparent',
+      color:filter===name?'#000':'#636366',
+      weight:filter===name?'600':'400',
+      shadow:filter===name?'0 1px 3px rgba(0,0,0,0.12)':'none',
+    });
+    const all=seg('all'),actv=seg('active'),done=seg('completed');
+
+    return {
+      total, activeCount, completedCount, progressWidth,
+      loading, notLoading: !loading,
+      error, configured: self.state.configured,
+      dismissError: ()=>self.setState({error:null}),
+      showSettings: self.state.showSettings,
+      openSettings: ()=>{ const c=self.getConfig(); self.setState({showSettings:true, settingsForm:{pat:c.pat||'',baseId:c.baseId||'',tableName:c.tableName||'To Do'}}); },
+      closeSettings: ()=>self.setState({showSettings:false}),
+      saveSettings: ()=>self.saveSettings(),
+      settingsForm: self.state.settingsForm,
+      handleSettingsPat: (e)=>self.setState(s=>({settingsForm:{...s.settingsForm,pat:e.target.value}})),
+      handleSettingsBase: (e)=>self.setState(s=>({settingsForm:{...s.settingsForm,baseId:e.target.value}})),
+      handleSettingsTable: (e)=>self.setState(s=>({settingsForm:{...s.settingsForm,tableName:e.target.value}})),
+      filterAll:()=>self.setState({filter:'all'}),
+      filterActive:()=>self.setState({filter:'active'}),
+      filterCompleted:()=>self.setState({filter:'completed'}),
+      tabAllBg:all.bg, tabAllColor:all.color, tabAllWeight:all.weight, tabAllShadow:all.shadow,
+      tabActiveBg:actv.bg, tabActiveColor:actv.color, tabActiveWeight:actv.weight, tabActiveShadow:actv.shadow,
+      tabDoneBg:done.bg, tabDoneColor:done.color, tabDoneWeight:done.weight, tabDoneShadow:done.shadow,
+      enrichedTodos, isEmpty:enrichedTodos.length===0,
+      showAddModal,
+      openAdd:()=>self.setState({showAddModal:true}),
+      closeAdd:()=>self.setState({showAddModal:false,addForm:{title:'',priority:'',source:'',dueDate:'',notes:'',tags:''}}),
+      submitAdd:()=>self.submitAdd(),
+      addForm,
+      handleAddTitle:(e)=>self.setState(s=>({addForm:{...s.addForm,title:e.target.value}})),
+      handleAddPriority:(e)=>self.setState(s=>({addForm:{...s.addForm,priority:e.target.value}})),
+      handleAddSource:(e)=>self.setState(s=>({addForm:{...s.addForm,source:e.target.value}})),
+      handleAddDueDate:(e)=>self.setState(s=>({addForm:{...s.addForm,dueDate:e.target.value}})),
+      handleAddNotes:(e)=>self.setState(s=>({addForm:{...s.addForm,notes:e.target.value}})),
+      handleAddTags:(e)=>self.setState(s=>({addForm:{...s.addForm,tags:e.target.value}})),
+      showEditModal:!!editTodoId,
+      closeEdit:()=>self.closeEdit(),
+      saveEdit:()=>self.saveEdit(),
+      editForm,
+      handleEditTitle:(e)=>self.setState(s=>({editForm:{...s.editForm,title:e.target.value}})),
+      handleEditPriority:(e)=>self.setState(s=>({editForm:{...s.editForm,priority:e.target.value}})),
+      handleEditSource:(e)=>self.setState(s=>({editForm:{...s.editForm,source:e.target.value}})),
+      handleEditDueDate:(e)=>self.setState(s=>({editForm:{...s.editForm,dueDate:e.target.value}})),
+      handleEditNotes:(e)=>self.setState(s=>({editForm:{...s.editForm,notes:e.target.value}})),
+      handleEditTags:(e)=>self.setState(s=>({editForm:{...s.editForm,tags:e.target.value}})),
+      stopPropagation:(e)=>e.stopPropagation(),
+    };
+  }
+}
+</script>
+</body>
+</html>
