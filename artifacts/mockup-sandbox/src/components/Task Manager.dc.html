@@ -394,12 +394,20 @@ class Component extends DCLogic {
   }
   componentWillUnmount() { document.removeEventListener('keydown', this._onKey); }
 
+  async atFetch(url, opts={}) {
+    const res = await fetch(url, { ...opts, headers: this.atHeaders() });
+    const data = await res.json();
+    if (!res.ok) {
+      const msg = data?.error?.message || data?.error?.type || `HTTP ${res.status}`;
+      throw new Error(`Airtable: ${msg}`);
+    }
+    return data;
+  }
+
   async loadTodos() {
     this.setState({ loading: true, error: null });
     try {
-      const res = await fetch(this.atUrl(), { headers: this.atHeaders() });
-      if (!res.ok) throw new Error(`Airtable error ${res.status}`);
-      const data = await res.json();
+      const data = await this.atFetch(this.atUrl());
       const todos = (data.records || [])
         .map(r => this.recordToTodo(r))
         .sort((a,b) => new Date(a.createdAt) - new Date(b.createdAt));
@@ -425,17 +433,11 @@ class Component extends DCLogic {
     const todo = this.state.todos.find(t=>t.id===id);
     if (!todo) return;
     const completed = !todo.completed;
-    // Optimistic update
     this.setState(s=>({todos:s.todos.map(t=>t.id===id?{...t,completed}:t)}));
     try {
-      await fetch(this.atUrl(id), {
-        method: 'PATCH',
-        headers: this.atHeaders(),
-        body: JSON.stringify({ fields: { Status: completed ? 'Done' : 'Open' } }),
-      });
+      await this.atFetch(this.atUrl(id), { method:'PATCH', body: JSON.stringify({ fields: { Status: completed ? 'Done' : 'Open' } }) });
     } catch(e) {
-      // Revert on failure
-      this.setState(s=>({todos:s.todos.map(t=>t.id===id?{...t,completed:!completed}:t)}));
+      this.setState(s=>({todos:s.todos.map(t=>t.id===id?{...t,completed:!completed}:t), error: e.message}));
     }
   }
 
@@ -446,22 +448,19 @@ class Component extends DCLogic {
     const priority = flagged ? 'High' : (todo.priority==='High' ? null : todo.priority);
     this.setState(s=>({todos:s.todos.map(t=>t.id===id?{...t,flagged,priority}:t)}));
     try {
-      await fetch(this.atUrl(id), {
-        method: 'PATCH',
-        headers: this.atHeaders(),
-        body: JSON.stringify({ fields: { Priority: priority || '' } }),
-      });
+      await this.atFetch(this.atUrl(id), { method:'PATCH', body: JSON.stringify({ fields: { Priority: priority || '' } }) });
     } catch(e) {
-      this.setState(s=>({todos:s.todos.map(t=>t.id===id?{...t,flagged:!flagged,priority:todo.priority}:t)}));
+      this.setState(s=>({todos:s.todos.map(t=>t.id===id?{...t,flagged:!flagged,priority:todo.priority}:t), error: e.message}));
     }
   }
 
   async deleteTodo(id) {
     this.setState(s=>({todos:s.todos.filter(t=>t.id!==id)}));
     try {
-      await fetch(this.atUrl(id), { method: 'DELETE', headers: this.atHeaders() });
+      await this.atFetch(this.atUrl(id), { method:'DELETE' });
     } catch(e) {
-      this.loadTodos(); // Reload on failure
+      this.setState({error: e.message});
+      this.loadTodos();
     }
   }
 
@@ -483,19 +482,15 @@ class Component extends DCLogic {
       editTodoId:null, editForm:{title:'',priority:'',source:'',dueDate:'',notes:'',tags:''},
     }));
     try {
-      await fetch(this.atUrl(editTodoId), {
-        method: 'PATCH',
-        headers: this.atHeaders(),
-        body: JSON.stringify({ fields: {
-          Title: editForm.title.trim(),
-          Priority: editForm.priority || '',
-          Source: editForm.source || '',
-          'Due Date': dueDate || '',
-          Notes: editForm.notes.trim() || '',
-          Tags: editForm.tags.trim() || '',
-        }}),
-      });
+      const fields = { Title: editForm.title.trim() };
+      if (editForm.priority)             fields['Priority']  = editForm.priority;
+      if (editForm.source)               fields['Source']    = editForm.source;
+      if (dueDate)                       fields['Due Date']  = dueDate;
+      if (editForm.notes.trim())         fields['Notes']     = editForm.notes.trim();
+      if (editForm.tags.trim())          fields['Tags']      = editForm.tags.trim();
+      await this.atFetch(this.atUrl(editTodoId), { method:'PATCH', body: JSON.stringify({ fields }) });
     } catch(e) {
+      this.setState({error: e.message});
       this.loadTodos();
     }
   }
@@ -517,24 +512,17 @@ class Component extends DCLogic {
     if(!addForm.title.trim()) return;
     this.setState({showAddModal:false, addForm:{title:'',priority:'',source:'',dueDate:'',notes:'',tags:''}});
     try {
-      const res = await fetch(this.atUrl(), {
-        method: 'POST',
-        headers: this.atHeaders(),
-        body: JSON.stringify({ fields: {
-          Title: addForm.title.trim(),
-          Status: 'Open',
-          Priority: addForm.priority || '',
-          Source: addForm.source || '',
-          'Due Date': this.fromInputDate(addForm.dueDate) || '',
-          Notes: addForm.notes.trim() || '',
-          Tags: addForm.tags.trim() || '',
-        }}),
-      });
-      const data = await res.json();
-      const newTodo = this.recordToTodo(data);
+      const fields = { Title: addForm.title.trim(), Status: 'Open' };
+      if (addForm.priority)              fields['Priority']  = addForm.priority;
+      if (addForm.source)                fields['Source']    = addForm.source;
+      if (this.fromInputDate(addForm.dueDate)) fields['Due Date'] = this.fromInputDate(addForm.dueDate);
+      if (addForm.notes.trim())          fields['Notes']     = addForm.notes.trim();
+      if (addForm.tags.trim())           fields['Tags']      = addForm.tags.trim();
+      const res = await this.atFetch(this.atUrl(), { method:'POST', body: JSON.stringify({ fields }) });
+      const newTodo = this.recordToTodo(res);
       this.setState(s=>({ todos: [...s.todos, newTodo] }));
     } catch(e) {
-      this.setState({ error: 'Failed to save task. Please try again.' });
+      this.setState({ error: e.message });
     }
   }
 
